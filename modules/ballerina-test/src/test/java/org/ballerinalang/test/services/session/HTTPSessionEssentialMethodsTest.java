@@ -226,7 +226,7 @@ public class HTTPSessionEssentialMethodsTest {
 
         String cookie = response.getHeader(RESPONSE_COOKIE_HEADER);
         Assert.assertNotNull(cookie);
-        String path = cookie.substring(SESSION_ID.length() + 40, cookie.length() - 1);
+        String path = cookie.substring(SESSION_ID.length() + 40, cookie.indexOf(";", SESSION_ID.length() + 40));
         Assert.assertEquals(path, "sample");
 
     }

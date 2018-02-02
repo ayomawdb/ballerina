@@ -62,7 +62,8 @@ public class TestHttpFutureListener implements ConnectorFutureListener {
         HTTPCarbonMessage responseMessage = HttpUtil.getCarbonMsg((BStruct) response[0], null);
         Session session = (Session) ((BStruct) request).getNativeData(Constants.HTTP_SESSION);
         if (session != null) {
-            session.generateSessionHeader(responseMessage);
+            //TODO improve below line when HTTPS related test cases are added
+            session.generateSessionHeader(responseMessage, false);
         }
         //Process CORS if exists.
         if (requestMessage.getHeader("Origin") != null) {
