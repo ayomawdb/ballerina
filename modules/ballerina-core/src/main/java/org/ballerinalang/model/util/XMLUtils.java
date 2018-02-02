@@ -32,7 +32,6 @@ import org.apache.axiom.om.OMText;
 import org.apache.axiom.om.OMXMLBuilderFactory;
 import org.apache.axiom.om.impl.dom.TextImpl;
 import org.apache.axiom.om.impl.llom.OMSourcedElementImpl;
-import org.apache.axiom.om.util.AXIOMUtil;
 import org.ballerinalang.model.DataTableOMDataSource;
 import org.ballerinalang.model.util.JsonNode.Type;
 import org.ballerinalang.model.values.BDataTable;
@@ -45,6 +44,7 @@ import org.ballerinalang.model.values.BXMLSequence;
 import org.ballerinalang.util.exceptions.BallerinaException;
 
 import java.io.InputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -89,7 +89,7 @@ public class XMLUtils {
             // Here we add a dummy enclosing tag, and send to AXIOM to parse the XML.
             // This is to overcome the issue of axiom not allowing to parse xml-comments,
             // xml-text nodes, and pi nodes, without having an enclosing xml-element node.
-            OMElement omElement = AXIOMUtil.stringToOM("<root>" + xmlStr + "</root>");
+            OMElement omElement = XMLUtils.stringToOM("<root>" + xmlStr + "</root>");
             Iterator<OMNode> children = omElement.getChildren();
             OMNode omNode = null;
             if (children.hasNext()) {
@@ -600,5 +600,19 @@ public class XMLUtils {
             qname = new QName(namespaceUri, localName);
         }
         return qname;
+    }
+
+    /**
+     * Create an OMElement from an XML fragment given as a string, while ignore any references to external entities.
+     * This prevents XML external entity injection attacks.
+     *
+     * @param xmlFragment the well-formed XML fragment
+     * @return The OMElement created out of the string XML fragment.
+     * @throws XMLStreamException
+     */
+    public static OMElement stringToOM(String xmlFragment) throws XMLStreamException {
+        OMFactory omFactory = OMAbstractFactory.getOMFactory();
+        return xmlFragment != null ? OMXMLBuilderFactory.createOMBuilder(omFactory,
+                new StringReader(xmlFragment)).getDocumentElement() : null;
     }
 }
