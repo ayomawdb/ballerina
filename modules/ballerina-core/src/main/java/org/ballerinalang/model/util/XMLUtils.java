@@ -32,6 +32,7 @@ import org.apache.axiom.om.OMText;
 import org.apache.axiom.om.OMXMLBuilderFactory;
 import org.apache.axiom.om.impl.dom.TextImpl;
 import org.apache.axiom.om.impl.llom.OMSourcedElementImpl;
+import org.apache.axiom.om.util.StAXParserConfiguration;
 import org.ballerinalang.model.DataTableOMDataSource;
 import org.ballerinalang.model.util.JsonNode.Type;
 import org.ballerinalang.model.values.BDataTable;
@@ -612,7 +613,7 @@ public class XMLUtils {
      */
     public static OMElement stringToOM(String xmlFragment) throws XMLStreamException {
         OMFactory omFactory = OMAbstractFactory.getOMFactory();
-        return xmlFragment != null ? OMXMLBuilderFactory.createOMBuilder(omFactory,
+        return xmlFragment != null ? OMXMLBuilderFactory.createOMBuilder(omFactory, StAXParserConfiguration.STANDALONE,
                 new StringReader(xmlFragment)).getDocumentElement() : null;
     }
 }
