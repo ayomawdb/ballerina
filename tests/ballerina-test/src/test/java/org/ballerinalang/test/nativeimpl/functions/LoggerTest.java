@@ -112,4 +112,15 @@ public class LoggerTest {
 
         Assert.assertEquals(consoleOutput.toString().substring(timestampFormat.length() + 1), expectedLog);
     }
+
+    @Test(description = "Test case for log forging prevention", enabled = false)
+    public void testLogForgingPrevention() throws IOException {
+        consoleOutput.reset();
+        final String logMsg = "Test error log\nTest error log\rTest error log";
+        final String expectedLog = "ERROR [] - Test error log_Test error log_Test error log \n";
+
+        BRunUtil.invoke(result, "testError", new BValue[]{new BString(logMsg)});
+
+        Assert.assertEquals(consoleOutput.toString().substring(timestampFormat.length() + 1), expectedLog);
+    }
 }

@@ -35,6 +35,8 @@ public abstract class AbstractLogFunction extends AbstractNativeFunction {
     protected static final BLogManager LOG_MANAGER = (BLogManager) LogManager.getLogManager();
 
     private static final Logger ballerinaRootLogger = LoggerFactory.getLogger(BLogManager.BALLERINA_ROOT_LOGGER_NAME);
+    private static final char[] DISALLOWED_CHARS = {'\r', '\n'};
+    private static final char DISALLOWED_CHAR_REPLACEMENT = '_';
 
     protected Logger getLogger(String pkg) {
         if (".".equals(pkg) || pkg == null) {
@@ -43,5 +45,16 @@ public abstract class AbstractLogFunction extends AbstractNativeFunction {
             // TODO: Refactor this later
             return LoggerFactory.getLogger(ballerinaRootLogger.getName() + "." + pkg);
         }
+    }
+
+    protected String sanitize(String msg) {
+        if (msg != null) {
+            for (char disallowedChar : DISALLOWED_CHARS) {
+                if (msg.indexOf(disallowedChar) > -1) {
+                    msg = msg.replace(disallowedChar, DISALLOWED_CHAR_REPLACEMENT);
+                }
+            }
+        }
+        return msg;
     }
 }
