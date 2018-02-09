@@ -20,6 +20,8 @@ package org.ballerinalang.logging.formatters;
 
 import org.ballerinalang.logging.BLogManager;
 import org.ballerinalang.logging.util.BLogLevelMapper;
+import org.ballerinalang.logging.util.Constants;
+import org.ballerinalang.logging.util.SanitizerUtils;
 
 import java.util.Date;
 import java.util.logging.Formatter;
@@ -32,8 +34,21 @@ import java.util.logging.LogRecord;
  */
 public class BallerinaLogFormatter extends Formatter {
 
-    private static final String format = BLogManager.getLogManager().getProperty(
-            BallerinaLogFormatter.class.getCanonicalName() + ".format");
+    private static final String FORMAT = BLogManager.getLogManager().getProperty(
+            BallerinaLogFormatter.class.getCanonicalName() + "." + Constants.LOG_FORMAT);
+    private static final String DISALLOW_REPLACEMENT = BLogManager.getLogManager().getProperty(
+            BallerinaLogFormatter.class.getCanonicalName() + "." + Constants.LOG_REPLACE_WITH);
+
+    private static String[] disallow = null;
+
+    public BallerinaLogFormatter() {
+        String disallowedStrings = BLogManager.getLogManager().getProperty(
+                BallerinaLogFormatter.class.getCanonicalName() + "." + Constants.LOG_DISALLOW);
+
+        if (disallowedStrings != null) {
+            disallow = disallowedStrings.split(",");
+        }
+    }
 
     @Override
     public String format(LogRecord record) {
@@ -41,10 +56,11 @@ public class BallerinaLogFormatter extends Formatter {
         if (record.getLoggerName().length() > BLogManager.LOGGER_PREFIX_LENGTH) {
             source = record.getLoggerName().substring(BLogManager.LOGGER_PREFIX_LENGTH);
         }
-        return String.format(format,
+        String message = SanitizerUtils.sanitize(record.getMessage(), disallow, DISALLOW_REPLACEMENT);
+        return String.format(FORMAT,
                              new Date(record.getMillis()),
                              BLogLevelMapper.getBallerinaLogLevel(record.getLevel()),
                              source,
-                             record.getMessage());
+                             message);
     }
 }

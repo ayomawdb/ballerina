@@ -31,4 +31,8 @@ public class Constants {
     public static final String BALLERINA_LOG_INSTANCES = "ballerina.log.instances";
     public static final String LOG_LEVEL = "level";
     public static final String LOG_FORMAT = "format";
+    public static final String LOG_DISALLOW = "disallow";
+    public static final String LOG_REPLACE_WITH = "replaceWith";
+
+    public static final String DEFAULT_REPLACEMENT_CHARACTER = "_";
 }

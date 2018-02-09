@@ -20,6 +20,8 @@ package org.ballerinalang.logging.formatters;
 
 import org.ballerinalang.logging.BLogManager;
 import org.ballerinalang.logging.util.BLogLevelMapper;
+import org.ballerinalang.logging.util.Constants;
+import org.ballerinalang.logging.util.SanitizerUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -34,8 +36,21 @@ import java.util.logging.LogRecord;
  */
 public class HTTPTraceLogFormatter extends Formatter {
 
-    private static String format = BLogManager.getLogManager().getProperty(
-            HTTPTraceLogFormatter.class.getCanonicalName() + ".format");
+    private static final String FORMAT = BLogManager.getLogManager().getProperty(
+            HTTPTraceLogFormatter.class.getCanonicalName() + "." + Constants.LOG_FORMAT);
+    private static final String DISALLOW_REPLACEMENT = BLogManager.getLogManager().getProperty(
+            BallerinaLogFormatter.class.getCanonicalName() + "." + Constants.LOG_REPLACE_WITH);
+
+    private static String[] disallow = null;
+
+    public HTTPTraceLogFormatter() {
+        String disallowedStrings = BLogManager.getLogManager().getProperty(
+                BallerinaLogFormatter.class.getCanonicalName() + "." + Constants.LOG_DISALLOW);
+
+        if (disallowedStrings != null) {
+            disallow = disallowedStrings.split(",");
+        }
+    }
 
     @Override
     public String format(LogRecord record) {
@@ -48,12 +63,12 @@ public class HTTPTraceLogFormatter extends Formatter {
             record.getThrown().printStackTrace(new PrintWriter(stringWriter));
             ex = stringWriter.toString();
         }
-
-        return String.format(format,
+        String message = SanitizerUtils.sanitize(record.getMessage(), disallow, DISALLOW_REPLACEMENT);
+        return String.format(FORMAT,
                              new Date(record.getMillis()),
                              BLogLevelMapper.getBallerinaLogLevel(record.getLevel()),
                              source,
-                             record.getMessage(),
+                             message,
                              ex);
     }
 }
