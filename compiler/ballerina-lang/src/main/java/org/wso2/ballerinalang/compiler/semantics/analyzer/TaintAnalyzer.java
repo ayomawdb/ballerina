@@ -97,7 +97,10 @@ import java.util.stream.Collectors;
 import javax.xml.XMLConstants;
 
 /**
- * @since 0.94
+ * Responsible of following operations related to taint checking:
+ *
+ * (*) Performing data flow analysis and propagating tainted status.
+ * (*) Validating if invocations use tainted values with secure parameters
  */
 public class TaintAnalyzer extends BLangNodeVisitor {
     private static final CompilerContext.Key<TaintAnalyzer> TAINT_ANALYZER_KEY =
