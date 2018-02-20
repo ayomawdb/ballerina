@@ -156,6 +156,9 @@ public enum DiagnosticCode {
     MISMATCHED_INPUT("mismatched.input"),
     FAILED_PREDICATE("failed.predicate"),
     SYNTAX_ERROR("syntax.error"),
+
+    // Error codes related to taint checking
+    CANNOT_USE_TAINTED_VALUE_WITH_SECURE_PARAMETER("cannot.use.tainted.value.with.secure.parameter"),
     ;
 
     private String value;
