@@ -1,6 +1,7 @@
 package org.wso2.ballerinalang.compiler.semantics.analyzer;
 
 import org.ballerinalang.compiler.CompilerPhase;
+import org.ballerinalang.model.elements.PackageID;
 import org.ballerinalang.model.symbols.SymbolKind;
 import org.ballerinalang.model.tree.NodeKind;
 import org.ballerinalang.model.tree.OperatorKind;
@@ -23,6 +24,7 @@ import org.wso2.ballerinalang.compiler.tree.BLangAnnotationAttachmentPoint;
 import org.wso2.ballerinalang.compiler.tree.BLangConnector;
 import org.wso2.ballerinalang.compiler.tree.BLangEnum;
 import org.wso2.ballerinalang.compiler.tree.BLangFunction;
+import org.wso2.ballerinalang.compiler.tree.BLangIdentifier;
 import org.wso2.ballerinalang.compiler.tree.BLangImportPackage;
 import org.wso2.ballerinalang.compiler.tree.BLangInvokableNode;
 import org.wso2.ballerinalang.compiler.tree.BLangNode;
@@ -91,6 +93,7 @@ import org.wso2.ballerinalang.compiler.util.diagnotic.DiagnosticLog;
 import org.wso2.ballerinalang.compiler.util.diagnotic.DiagnosticPos;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -120,6 +123,8 @@ public class TaintAnalyzer extends BLangNodeVisitor {
     private List<Boolean> taintedStatus;
     private boolean nonOverridingContext;
     private BLangInvocation invocation;
+
+    private Map<FunctionIdentifier, BLangFunction> lambdaFunctions = new HashMap<FunctionIdentifier, BLangFunction>();
 
     public static TaintAnalyzer getInstance(CompilerContext context) {
         TaintAnalyzer taintAnalyzer = context.get(TAINT_ANALYZER_KEY);
@@ -256,7 +261,12 @@ public class TaintAnalyzer extends BLangNodeVisitor {
                     (ownerSymTag & SymTag.SERVICE) != SymTag.SERVICE &&
                     (ownerSymTag & SymTag.CONNECTOR) != SymTag.CONNECTOR) {
                 List<Boolean> taintedCheckResults = analyzeNode(varNode.expr, varInitEnv);
-                setTaintedStatus(varNode, taintedCheckResults.get(0));
+                if (varNode.expr instanceof BLangLambdaFunction) {
+                    BLangFunction function = ((BLangLambdaFunction) varNode.expr).function;
+                    lambdaFunctions.put(new FunctionIdentifier(varNode.symbol.pkgID, varNode.getName()), function);
+                } else {
+                    setTaintedStatus(varNode, taintedCheckResults.get(0));
+                }
             }
         }
     }
@@ -452,13 +462,9 @@ public class TaintAnalyzer extends BLangNodeVisitor {
 
     @Override
     public void visit(BLangReturn returnNode) {
+        //TODO Named returns
         List<Boolean> taintedCheckResults = new ArrayList<>();
-        for (BLangExpression expr : returnNode.exprs) {
-            if (expr instanceof BLangVariableReference) {
-                BLangVariableReference varRef = (BLangVariableReference) expr;
-                taintedCheckResults.add(varRef.symbol.tainted);
-            }
-        }
+        returnNode.exprs.forEach(expr -> taintedCheckResults.add(analyzeNode(expr, env).get(0)));
         taintedStatus = taintedCheckResults;
     }
 
@@ -572,13 +578,22 @@ public class TaintAnalyzer extends BLangNodeVisitor {
         this.invocation = iExpr;
 
         SymbolEnv pkgEnv = null;
+        for (BPackageSymbol packageSymbol : symbolEnter.packageEnvs.keySet()) {
+            if (packageSymbol.pkgID.equals(iExpr.symbol.pkgID)) {
+                pkgEnv = symbolEnter.packageEnvs.get(packageSymbol);
+                break;
+            }
+        }
 
         List<BLangInvokableNode> invokableNodeList = new ArrayList<>();
-        if (iExpr.symbol.kind.equals(SymbolKind.FUNCTION)) {
-            invokableNodeList = pkgNode.functions.stream().filter(f -> (f.name.equals(iExpr.name)))
+        if (iExpr.functionPointerInvocation) {
+            invokableNodeList.add(lambdaFunctions.get(new FunctionIdentifier(iExpr.symbol.pkgID, iExpr.name)));
+        } else if (iExpr.symbol.kind.equals(SymbolKind.FUNCTION)) {
+            invokableNodeList = ((BLangPackage) pkgEnv.node).functions.stream().filter(f -> (f.name.equals(iExpr.name)))
                     .collect(Collectors.toList());
         } else if (iExpr.symbol.kind.equals(SymbolKind.ACTION)) {
-            List<BLangConnector> connectorList = pkgNode.connectors.stream().filter(f ->
+            //TODO Needs improvement (when multiple connectors have same action name)
+            List<BLangConnector> connectorList = ((BLangPackage) pkgEnv.node).connectors.stream().filter(f ->
                     f.symbol.name.equals(iExpr.symbol.owner.name)).collect(Collectors.toList());
             for (BLangConnector connector : connectorList) {
                 invokableNodeList = connector.getActions().stream().filter(f -> f.name.equals(iExpr.name))
@@ -587,37 +602,6 @@ public class TaintAnalyzer extends BLangNodeVisitor {
                     break;
                 }
             }
-        }
-
-        if (invokableNodeList.size() == 0) {
-            if (iExpr.symbol != null && iExpr.symbol.pkgID != null) {
-                //TODO: Need to check why hashcodes are not matching
-                for (BPackageSymbol packageSymbol : symbolEnter.packageEnvs.keySet()) {
-                    if (packageSymbol.pkgID.equals(iExpr.symbol.pkgID)) {
-                        pkgEnv = symbolEnter.packageEnvs.get(packageSymbol);
-                        break;
-                    }
-                }
-                if (pkgEnv.node instanceof BLangPackage) {
-                    if (iExpr.symbol.kind.equals(SymbolKind.FUNCTION)) {
-                        invokableNodeList = ((BLangPackage) pkgEnv.node).functions.stream()
-                                .filter(f -> (f.name.equals(iExpr.name))).collect(Collectors.toList());
-                    } else if (iExpr.symbol.kind.equals(SymbolKind.ACTION)) {
-                        List<BLangConnector> connectorList = ((BLangPackage) pkgEnv.node).connectors.stream()
-                                .filter(f -> f.symbol.name.equals(iExpr.symbol.owner.name))
-                                .collect(Collectors.toList());
-                        for (BLangConnector connector : connectorList) {
-                            invokableNodeList = connector.getActions().stream().filter(f -> f.name.equals(iExpr.name))
-                                    .collect(Collectors.toList());
-                            if (invokableNodeList.size() > 0) {
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            pkgEnv = symbolEnter.packageEnvs.get(pkgNode.symbol);
         }
 
         if (pkgEnv != null && invokableNodeList.size() > 0) {
@@ -716,13 +700,16 @@ public class TaintAnalyzer extends BLangNodeVisitor {
 
     @Override
     public void visit(BLangLambdaFunction bLangLambdaFunction) {
-        List<Boolean> taintedCheckResults = new ArrayList<>();
-        if (bLangLambdaFunction.function.retParams != null) {
-            for (BLangVariable returnVar : bLangLambdaFunction.function.retParams) {
-                taintedCheckResults.add(returnVar.symbol.tainted);
-            }
-        }
-        taintedStatus = taintedCheckResults;
+        //lambdaFunctions.add(bLangLambdaFunction);
+//        if (invocation != null) {
+//            List<Boolean> taintedCheckResults = new ArrayList<>();
+//            if (bLangLambdaFunction.function.retParams != null) {
+//                for (BLangVariable returnVar : bLangLambdaFunction.function.retParams) {
+//                    taintedCheckResults.add(returnVar.symbol.tainted);
+//                }
+//            }
+//            taintedStatus = taintedCheckResults;
+//        }
     }
 
     public void visit(BLangXMLQName bLangXMLQName) {
@@ -942,4 +929,33 @@ public class TaintAnalyzer extends BLangNodeVisitor {
         return taintedStatusList;
     }
 
+    private class FunctionIdentifier {
+        public PackageID packageId;
+        public BLangIdentifier identifier;
+
+        public FunctionIdentifier(PackageID packageId, BLangIdentifier identifier) {
+            this.packageId = packageId;
+            this.identifier = identifier;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+            FunctionIdentifier that = (FunctionIdentifier) o;
+            return packageId.equals(that.packageId) &&
+                    identifier.equals(that.identifier);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = packageId.hashCode();
+            result = 31 * result + identifier.hashCode();
+            return result;
+        }
+    }
 }
