@@ -478,11 +478,11 @@ namespaceDeclaration
     ;
 
 taintStatement
-    : TAINT variableReference
+    : TAINT variableReference SEMICOLON
     ;
 
 untaintStatement
-    : UNTAINT variableReference
+    : UNTAINT variableReference SEMICOLON
     ;
 
 expression
