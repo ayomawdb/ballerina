@@ -518,11 +518,15 @@ nameReference
     ;
 
 returnParameters
-    : RETURNS? LEFT_PARENTHESIS (returnParameterList | typeList) RIGHT_PARENTHESIS
+    : RETURNS? LEFT_PARENTHESIS (returnParameterList | returnTypeList) RIGHT_PARENTHESIS
     ;
 
 typeList
-    :   typeName (COMMA typeName)*
+    :   (SENSITIVE)? typeName (COMMA typeName)*
+    ;
+
+returnTypeList
+    :   (TAINTED)? typeName (COMMA typeName)*
     ;
 
 parameterList
