@@ -522,11 +522,11 @@ returnParameters
     ;
 
 typeList
-    :   (SENSITIVE)? typeName (COMMA typeName)*
+    :   (SENSITIVE)? typeName (COMMA (SENSITIVE)? typeName)*
     ;
 
 returnTypeList
-    :   (TAINTED)? typeName (COMMA typeName)*
+    :   (TAINTED)? typeName (COMMA (SENSITIVE)? typeName)*
     ;
 
 parameterList
