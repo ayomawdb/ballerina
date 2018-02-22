@@ -254,6 +254,8 @@ statement
     |   abortStatement
     |   lockStatement
     |   namespaceDeclarationStatement
+    |   taintStatement
+    |   untaintStatement
     ;
 
 variableDefinitionStatement
@@ -475,6 +477,14 @@ namespaceDeclaration
     :   XMLNS QuotedStringLiteral (AS Identifier)? SEMICOLON
     ;
 
+taintStatement
+    : TAINT variableReference
+    ;
+
+untaintStatement
+    : UNTAINT variableReference
+    ;
+
 expression
     :   simpleLiteral                                                       # simpleLiteralExpression
     |   arrayLiteral                                                        # arrayLiteralExpression
@@ -508,7 +518,7 @@ nameReference
     ;
 
 returnParameters
-    : RETURNS? LEFT_PARENTHESIS (parameterList | typeList) RIGHT_PARENTHESIS
+    : RETURNS? LEFT_PARENTHESIS (returnParameterList | typeList) RIGHT_PARENTHESIS
     ;
 
 typeList
@@ -519,8 +529,16 @@ parameterList
     :   parameter (COMMA parameter)*
     ;
 
+returnParameterList
+    :   returnParameter (COMMA returnParameter)*
+    ;
+
 parameter
-    :   annotationAttachment* typeName Identifier
+    :   annotationAttachment* (SENSITIVE)? typeName Identifier
+    ;
+
+returnParameter
+    :   annotationAttachment* (TAINTED)? typeName Identifier
     ;
 
 fieldDefinition
