@@ -28,6 +28,8 @@ public enum CompilerPhase {
 
     CODE_ANALYZE("codeAnalyze"),
 
+    TAINT_TABLE_ENTER("taintTableEnter"),
+
     DESUGAR("desugar"),
 
     CODE_GEN("codeGen");
@@ -46,6 +48,8 @@ public enum CompilerPhase {
                 return TYPE_CHECK;
             case "codeAnalyze":
                 return CODE_ANALYZE;
+            case "taintTableEnter":
+                return TAINT_TABLE_ENTER;
             case "desugar":
                 return DESUGAR;
             case "codeGen":

@@ -444,7 +444,7 @@ public class BLangPackageBuilder {
                                 int annotCount,
                                 Flag... flags) {
         BLangVariable var = (BLangVariable) this.generateBasicVarNode(pos, ws, identifier, exprAvailable);
-        if (flags != null) {
+        if (flags != null && flags.length > 0) {
             var.flagSet.addAll(Arrays.asList(flags));
         }
         attachAnnotations(var, annotCount);

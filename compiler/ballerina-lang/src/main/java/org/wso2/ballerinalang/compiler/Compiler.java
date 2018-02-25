@@ -26,6 +26,7 @@ import org.wso2.ballerinalang.compiler.desugar.Desugar;
 import org.wso2.ballerinalang.compiler.parser.BLangParserException;
 import org.wso2.ballerinalang.compiler.semantics.analyzer.CodeAnalyzer;
 import org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer;
+import org.wso2.ballerinalang.compiler.semantics.analyzer.TaintTableEnter;
 import org.wso2.ballerinalang.compiler.semantics.model.SymbolTable;
 import org.wso2.ballerinalang.compiler.tree.BLangPackage;
 import org.wso2.ballerinalang.compiler.util.CompilerContext;
@@ -48,6 +49,7 @@ public class Compiler {
     private SymbolTable symbolTable;
     private SemanticAnalyzer semAnalyzer;
     private CodeAnalyzer codeAnalyzer;
+    private TaintTableEnter taintTableEnter;
     private Desugar desugar;
     private CodeGenerator codeGenerator;
 
@@ -75,6 +77,7 @@ public class Compiler {
         this.symbolTable = SymbolTable.getInstance(context);
         this.semAnalyzer = SemanticAnalyzer.getInstance(context);
         this.codeAnalyzer = CodeAnalyzer.getInstance(context);
+        this.taintTableEnter = TaintTableEnter.getInstance(context);
         this.desugar = Desugar.getInstance(context);
         this.codeGenerator = CodeGenerator.getInstance(context);
 
@@ -99,9 +102,15 @@ public class Compiler {
         }
 
         pkgNode = codeAnalyze(pkgNode);
+        if (this.stopCompilation(CompilerPhase.TAINT_TABLE_ENTER)) {
+            return;
+        }
+
+        taintTableEnter(pkgNode);
         if (this.stopCompilation(CompilerPhase.DESUGAR)) {
             return;
         }
+
         // TODO : Improve this.
         desugar(builtInPackage);
         pkgNode = desugar(pkgNode);
@@ -157,6 +166,10 @@ public class Compiler {
 
     private BLangPackage codeAnalyze(BLangPackage pkgNode) {
         return codeAnalyzer.analyze(pkgNode);
+    }
+
+    private BLangPackage taintTableEnter(BLangPackage pkgNode) {
+        return taintTableEnter.analyze(pkgNode);
     }
 
     private BLangPackage desugar(BLangPackage pkgNode) {
