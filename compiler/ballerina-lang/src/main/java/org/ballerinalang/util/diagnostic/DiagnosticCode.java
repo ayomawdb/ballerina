@@ -159,7 +159,8 @@ public enum DiagnosticCode {
 
     // Taint checking related codes
     RETURN_MUST_BE_TAINTED("return.must.be.marked.tainted"),
-    UNABLE_TO_PERFORM_TAINT_CHECKING_IN_LOOP("unable.to.perform.taint.checking.in.loop");
+    UNABLE_TO_PERFORM_TAINT_CHECKING_IN_LOOP("unable.to.perform.taint.checking.in.loop"),
+    TAINTED_VALUE_PASSED_TO_SENSITIVE("tainted.value.passed.to.sensitive");
 
     private String value;
 
