@@ -198,7 +198,7 @@ builtInReferenceTypeName
     ;
 
 functionTypeName
-    :   FUNCTION LEFT_PARENTHESIS (parameterList | typeList)? RIGHT_PARENTHESIS returnParameters?
+    :   FUNCTION LEFT_PARENTHESIS (parameterList | parameterTypeList)? RIGHT_PARENTHESIS returnParameters?
     ;
 
 xmlNamespaceName
@@ -513,36 +513,33 @@ expression
 
 //reusable productions
 
+parameterModifier
+    :   SENSITIVE
+    |   TAINTED
+    ;
+
 nameReference
     :   (Identifier COLON)? Identifier
     ;
 
 returnParameters
-    : RETURNS? LEFT_PARENTHESIS (returnParameterList | returnTypeList) RIGHT_PARENTHESIS
+    : RETURNS? LEFT_PARENTHESIS (parameterList | parameterTypeList) RIGHT_PARENTHESIS
     ;
 
-typeList
-    :   (SENSITIVE)? typeName (COMMA (SENSITIVE)? typeName)*
+parameterTypeList
+    :   parameterTypeName (COMMA parameterTypeName)*
     ;
 
-returnTypeList
-    :   (TAINTED)? typeName (COMMA (SENSITIVE)? typeName)*
+parameterTypeName
+    :   parameterModifier* typeName
     ;
 
 parameterList
     :   parameter (COMMA parameter)*
     ;
 
-returnParameterList
-    :   returnParameter (COMMA returnParameter)*
-    ;
-
 parameter
-    :   annotationAttachment* (SENSITIVE)? typeName Identifier
-    ;
-
-returnParameter
-    :   annotationAttachment* (TAINTED)? typeName Identifier
+    :   annotationAttachment* parameterModifier* typeName Identifier
     ;
 
 fieldDefinition

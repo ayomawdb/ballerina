@@ -1,4 +1,4 @@
-// Generated from /home/ayoma/forks/clean/ballerina_new/docs/grammar/BallerinaParser.g4 by ANTLR 4.5.3
+// Generated from /home/ayoma/forks/new/ballerina/compiler/ballerina-lang/src/main/resources/grammar/BallerinaParser.g4 by ANTLR 4.5.3
 package org.wso2.ballerinalang.compiler.parser.antlr4;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
@@ -1476,6 +1476,16 @@ public interface BallerinaParserListener extends ParseTreeListener {
 	 */
 	void exitBinaryPowExpression(BallerinaParser.BinaryPowExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link BallerinaParser#parameterModifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterParameterModifier(BallerinaParser.ParameterModifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link BallerinaParser#parameterModifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitParameterModifier(BallerinaParser.ParameterModifierContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link BallerinaParser#nameReference}.
 	 * @param ctx the parse tree
 	 */
@@ -1496,25 +1506,25 @@ public interface BallerinaParserListener extends ParseTreeListener {
 	 */
 	void exitReturnParameters(BallerinaParser.ReturnParametersContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link BallerinaParser#typeList}.
+	 * Enter a parse tree produced by {@link BallerinaParser#parameterTypeList}.
 	 * @param ctx the parse tree
 	 */
-	void enterTypeList(BallerinaParser.TypeListContext ctx);
+	void enterParameterTypeList(BallerinaParser.ParameterTypeListContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link BallerinaParser#typeList}.
+	 * Exit a parse tree produced by {@link BallerinaParser#parameterTypeList}.
 	 * @param ctx the parse tree
 	 */
-	void exitTypeList(BallerinaParser.TypeListContext ctx);
+	void exitParameterTypeList(BallerinaParser.ParameterTypeListContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link BallerinaParser#returnTypeList}.
+	 * Enter a parse tree produced by {@link BallerinaParser#parameterTypeName}.
 	 * @param ctx the parse tree
 	 */
-	void enterReturnTypeList(BallerinaParser.ReturnTypeListContext ctx);
+	void enterParameterTypeName(BallerinaParser.ParameterTypeNameContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link BallerinaParser#returnTypeList}.
+	 * Exit a parse tree produced by {@link BallerinaParser#parameterTypeName}.
 	 * @param ctx the parse tree
 	 */
-	void exitReturnTypeList(BallerinaParser.ReturnTypeListContext ctx);
+	void exitParameterTypeName(BallerinaParser.ParameterTypeNameContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link BallerinaParser#parameterList}.
 	 * @param ctx the parse tree
@@ -1526,16 +1536,6 @@ public interface BallerinaParserListener extends ParseTreeListener {
 	 */
 	void exitParameterList(BallerinaParser.ParameterListContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link BallerinaParser#returnParameterList}.
-	 * @param ctx the parse tree
-	 */
-	void enterReturnParameterList(BallerinaParser.ReturnParameterListContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link BallerinaParser#returnParameterList}.
-	 * @param ctx the parse tree
-	 */
-	void exitReturnParameterList(BallerinaParser.ReturnParameterListContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link BallerinaParser#parameter}.
 	 * @param ctx the parse tree
 	 */
@@ -1545,16 +1545,6 @@ public interface BallerinaParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitParameter(BallerinaParser.ParameterContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link BallerinaParser#returnParameter}.
-	 * @param ctx the parse tree
-	 */
-	void enterReturnParameter(BallerinaParser.ReturnParameterContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link BallerinaParser#returnParameter}.
-	 * @param ctx the parse tree
-	 */
-	void exitReturnParameter(BallerinaParser.ReturnParameterContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link BallerinaParser#fieldDefinition}.
 	 * @param ctx the parse tree

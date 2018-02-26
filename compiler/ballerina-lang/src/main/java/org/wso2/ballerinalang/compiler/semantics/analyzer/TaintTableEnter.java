@@ -290,6 +290,7 @@ public class TaintTableEnter extends BLangNodeVisitor {
                 this.blockedNode = null;
                 return;
             }
+            updateBasedOnFlags(taintedStatus, invNode.retParams);
             taintTable.put(-1, taintedStatus);
             // Compiler error if a return is always tainted, but it has not been marked 'tainted'.
             if (invNode.retParams != null && invNode.retParams.size() > 0) {
@@ -317,12 +318,22 @@ public class TaintTableEnter extends BLangNodeVisitor {
                     // state of invocations, into owner.
                     taintError = null;
                 } else {
+                    updateBasedOnFlags(taintedStatus, invNode.retParams);
                     taintTable.put(i, taintedStatus);
                 }
             }
             //Clean-up old state.
             invNode.params.forEach(param -> param.symbol.tainted = false);
             invNode.symbol.taintTable = taintTable;
+        }
+    }
+    private void updateBasedOnFlags(List<Boolean> taintedStatus, List<BLangVariable> retParams) {
+        for (int i = 0; i < retParams.size(); i++) {
+            BLangVariable param = retParams.get(i);
+            boolean observedReturnTaintedStatus = taintedStatus.get(i);
+            if (!observedReturnTaintedStatus) {
+                taintedStatus.set(i, param.flagSet.contains(Flag.TAINTED));
+            }
         }
     }
 

@@ -223,6 +223,10 @@ public class BLangPackageBuilder {
 
     private Set<Whitespace> endpointKeywordWs;
 
+    private Stack<List<Flag>> parameterModifierStack = new Stack<>();
+
+    private Stack<List<List<Flag>>> parameterModifierListStack = new Stack<>();
+
     private DiagnosticLog dlog;
     private BLangAnonymousModelHelper anonymousModelHelper;
 
@@ -350,6 +354,7 @@ public class BLangPackageBuilder {
             functionTypeNode.addWS(commaWsStack.pop());
             if (retParamTypeOnly) {
                 functionTypeNode.returnParamTypeNodes.addAll(this.typeNodeListStack.pop());
+                this.parameterModifierListStack.pop();
             } else {
                 this.varListStack.pop().forEach(v -> functionTypeNode.returnParamTypeNodes.add(v.getTypeNode()));
             }
@@ -358,6 +363,7 @@ public class BLangPackageBuilder {
             functionTypeNode.addWS(commaWsStack.pop());
             if (paramsTypeOnly) {
                 functionTypeNode.paramTypeNodes.addAll(this.typeNodeListStack.pop());
+                this.parameterModifierListStack.pop();
             } else {
                 this.varListStack.pop().forEach(v -> functionTypeNode.paramTypeNodes.add(v.getTypeNode()));
             }
@@ -465,16 +471,25 @@ public class BLangPackageBuilder {
         invNode.addWS(ws);
         if (retParamsAvail) {
             if (retParamTypeOnly) {
-                this.typeNodeListStack.pop().forEach(e -> {
+                List<List<Flag>> flags = null;
+                if (parameterModifierListStack.size() > 0) {
+                    flags = parameterModifierListStack.pop();
+                }
+                List<TypeNode> pop = this.typeNodeListStack.pop();
+                for (int i = 0; i < pop.size(); i++) {
+                    TypeNode e = pop.get(i);
                     VariableNode var = TreeBuilder.createVariableNode();
                     var.setTypeNode(e);
+                    if (flags != null && flags.size() > i) {
+                        flags.get(i).forEach(flag -> var.addFlag(flag));
+                    }
 
                     // Create an empty name node
                     IdentifierNode nameNode = TreeBuilder.createIdentifierNode();
                     nameNode.setValue("");
                     var.setName(nameNode);
                     invNode.addReturnParameter(var);
-                });
+                }
             } else {
                 this.varListStack.pop().forEach(invNode::addReturnParameter);
             }
@@ -1114,11 +1129,15 @@ public class BLangPackageBuilder {
 
     public void startProcessingTypeNodeList() {
         this.typeNodeListStack.push(new ArrayList<>());
+        this.parameterModifierListStack.push(new ArrayList<>());
     }
 
     public void endProcessingTypeNodeList(int size) {
         for (int i = 0; i < size; i++) {
             this.typeNodeListStack.peek().add(0, typeNodeStack.pop());
+        }
+        for (int i = 0; i < size; i++) {
+            this.parameterModifierListStack.peek().add(0, parameterModifierStack.pop());
         }
     }
 
@@ -1849,5 +1868,9 @@ public class BLangPackageBuilder {
         userDefinedType.pkgAlias = pkgAlias;
         userDefinedType.typeName = name;
         return userDefinedType;
+    }
+
+    public void addParameterModifiers(List<Flag> flags) {
+        parameterModifierStack.push(flags);
     }
 }

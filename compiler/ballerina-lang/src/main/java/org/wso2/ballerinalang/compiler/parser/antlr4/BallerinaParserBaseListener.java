@@ -1,4 +1,4 @@
-// Generated from /home/ayoma/forks/clean/ballerina_new/docs/grammar/BallerinaParser.g4 by ANTLR 4.5.3
+// Generated from /home/ayoma/forks/new/ballerina/compiler/ballerina-lang/src/main/resources/grammar/BallerinaParser.g4 by ANTLR 4.5.3
 package org.wso2.ballerinalang.compiler.parser.antlr4;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -1672,6 +1672,18 @@ public class BallerinaParserBaseListener implements BallerinaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterParameterModifier(BallerinaParser.ParameterModifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitParameterModifier(BallerinaParser.ParameterModifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterNameReference(BallerinaParser.NameReferenceContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1696,25 +1708,25 @@ public class BallerinaParserBaseListener implements BallerinaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterTypeList(BallerinaParser.TypeListContext ctx) { }
+	@Override public void enterParameterTypeList(BallerinaParser.ParameterTypeListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitTypeList(BallerinaParser.TypeListContext ctx) { }
+	@Override public void exitParameterTypeList(BallerinaParser.ParameterTypeListContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterReturnTypeList(BallerinaParser.ReturnTypeListContext ctx) { }
+	@Override public void enterParameterTypeName(BallerinaParser.ParameterTypeNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitReturnTypeList(BallerinaParser.ReturnTypeListContext ctx) { }
+	@Override public void exitParameterTypeName(BallerinaParser.ParameterTypeNameContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -1732,18 +1744,6 @@ public class BallerinaParserBaseListener implements BallerinaParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterReturnParameterList(BallerinaParser.ReturnParameterListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitReturnParameterList(BallerinaParser.ReturnParameterListContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterParameter(BallerinaParser.ParameterContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -1751,18 +1751,6 @@ public class BallerinaParserBaseListener implements BallerinaParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitParameter(BallerinaParser.ParameterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterReturnParameter(BallerinaParser.ReturnParameterContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitReturnParameter(BallerinaParser.ReturnParameterContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

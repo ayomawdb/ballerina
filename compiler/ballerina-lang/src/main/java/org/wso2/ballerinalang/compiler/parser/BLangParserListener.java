@@ -47,6 +47,8 @@ import java.util.stream.Collectors;
 public class BLangParserListener extends BallerinaParserBaseListener {
     private static final String KEYWORD_PUBLIC = "public";
     private static final String KEYWORD_NATIVE = "native";
+    private static final String KEYWORD_SENSITIVE = "sensitive";
+    private static final String KEYWORD_TAINTED = "tainted";
 
     private BLangPackageBuilder pkgBuilder;
     private BDiagnosticSource diagnosticSrc;
@@ -70,41 +72,26 @@ public class BLangParserListener extends BallerinaParserBaseListener {
     }
 
     @Override
-    public void enterReturnParameterList(BallerinaParser.ReturnParameterListContext ctx) {
-        if (ctx.exception != null) {
-            return;
-        }
-
-        this.pkgBuilder.startVarList();
-    }
-
-    @Override
     public void exitParameter(BallerinaParser.ParameterContext ctx) {
         if (ctx.exception != null) {
             return;
         }
 
-        if (ctx.SENSITIVE() == null) {
+        if (ctx.parameterModifier() == null) {
             this.pkgBuilder.addVar(getCurrentPos(ctx), getWS(ctx), ctx.Identifier().getText(),
                     false, ctx.annotationAttachment().size());
         } else {
+            List<Flag> flags = new ArrayList<>();
+            boolean sensitiveParam = KEYWORD_SENSITIVE.equals(ctx.getChild(0).getText());
+            boolean taintedParam = KEYWORD_TAINTED.equals(ctx.getChild(0).getText());
+            if (sensitiveParam) {
+                flags.add(Flag.SENSITIVE);
+            }
+            if (taintedParam) {
+                flags.add(Flag.TAINTED);
+            }
             this.pkgBuilder.addVar(getCurrentPos(ctx), getWS(ctx), ctx.Identifier().getText(),
-                    false, ctx.annotationAttachment().size(), Flag.SENSITIVE);
-        }
-    }
-
-    @Override
-    public void exitReturnParameter(BallerinaParser.ReturnParameterContext ctx) {
-        if (ctx.exception != null) {
-            return;
-        }
-
-        if (ctx.TAINTED() == null) {
-            this.pkgBuilder.addVar(getCurrentPos(ctx), getWS(ctx), ctx.Identifier().getText(),
-                    false, ctx.annotationAttachment().size());
-        } else {
-            this.pkgBuilder.addVar(getCurrentPos(ctx), getWS(ctx), ctx.Identifier().getText(),
-                    false, ctx.annotationAttachment().size(), Flag.TAINTED);
+                    false, ctx.annotationAttachment().size(), flags.toArray(new Flag[flags.size()]));
         }
     }
 
@@ -301,7 +288,7 @@ public class BLangParserListener extends BallerinaParserBaseListener {
 
         this.pkgBuilder.addLambdaFunctionDef(getCurrentPos(ctx), getWS(ctx), ctx.parameterList() != null,
                 ctx.returnParameters() != null,
-                ctx.returnParameters() != null && ctx.returnParameters().returnTypeList() != null);
+                ctx.returnParameters() != null && ctx.returnParameters().parameterTypeList() != null);
     }
 
     /**
@@ -315,7 +302,7 @@ public class BLangParserListener extends BallerinaParserBaseListener {
 
         this.pkgBuilder.endCallableUnitSignature(getWS(ctx), ctx.Identifier().getText(),
                 ctx.parameterList() != null, ctx.returnParameters() != null,
-                ctx.returnParameters() != null && ctx.returnParameters().returnTypeList() != null);
+                ctx.returnParameters() != null && ctx.returnParameters().parameterTypeList() != null);
     }
 
     /**
@@ -821,18 +808,18 @@ public class BLangParserListener extends BallerinaParserBaseListener {
                 returnsKeywordExists = false;
         if (ctx.parameterList() != null) {
             paramsAvail = ctx.parameterList().parameter().size() > 0;
-        } else if (ctx.typeList() != null) {
-            paramsAvail = ctx.typeList().typeName().size() > 0;
+        } else if (ctx.parameterTypeList() != null) {
+            paramsAvail = ctx.parameterTypeList().parameterTypeName().size() > 0;
             paramsTypeOnly = true;
         }
 
         if (ctx.returnParameters() != null) {
             BallerinaParser.ReturnParametersContext returnCtx = ctx.returnParameters();
             returnsKeywordExists = "returns".equals(returnCtx.getChild(0).getText());
-            if (returnCtx.returnParameterList() != null) {
-                retParamsAvail = returnCtx.returnParameterList().returnParameter().size() > 0;
-            } else if (returnCtx.returnTypeList() != null) {
-                retParamsAvail = returnCtx.returnTypeList().typeName().size() > 0;
+            if (returnCtx.parameterList() != null) {
+                retParamsAvail = returnCtx.parameterList().parameter().size() > 0;
+            } else if (returnCtx.parameterTypeList() != null) {
+                retParamsAvail = returnCtx.parameterTypeList().parameterTypeName().size() > 0;
                 retParamTypeOnly = true;
             }
         }
@@ -1768,7 +1755,7 @@ public class BLangParserListener extends BallerinaParserBaseListener {
     }
 
     @Override
-    public void enterTypeList(BallerinaParser.TypeListContext ctx) {
+    public void enterParameterTypeList(BallerinaParser.ParameterTypeListContext ctx) {
         if (ctx.exception != null) {
             return;
         }
@@ -1777,7 +1764,7 @@ public class BLangParserListener extends BallerinaParserBaseListener {
     }
 
     @Override
-    public void exitTypeList(BallerinaParser.TypeListContext ctx) {
+    public void exitParameterTypeList(BallerinaParser.ParameterTypeListContext ctx) {
         if (ctx.exception != null) {
             return;
         }
@@ -1786,35 +1773,32 @@ public class BLangParserListener extends BallerinaParserBaseListener {
                 parent instanceof BallerinaParser.ReturnParametersContext &&
                         parent.parent instanceof BallerinaParser.FunctionTypeNameContext;
         if (inFuncTypeSig) {
-            this.pkgBuilder.endProcessingTypeNodeList(getWS(ctx), ctx.typeName().size());
+            this.pkgBuilder.endProcessingTypeNodeList(getWS(ctx), ctx.parameterTypeName().size());
         } else {
-            this.pkgBuilder.endProcessingTypeNodeList(ctx.typeName().size());
+            this.pkgBuilder.endProcessingTypeNodeList(ctx.parameterTypeName().size());
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public void enterReturnTypeList(BallerinaParser.ReturnTypeListContext ctx) {
+    public void exitParameterTypeName(BallerinaParser.ParameterTypeNameContext ctx) {
         if (ctx.exception != null) {
             return;
         }
 
-        this.pkgBuilder.startProcessingTypeNodeList();
-    }
+        List<Flag> flags = new ArrayList<>();
+        boolean sensitiveParam = KEYWORD_SENSITIVE.equals(ctx.getChild(0).getText());
+        boolean taintedParam = KEYWORD_TAINTED.equals(ctx.getChild(0).getText());
+        if (sensitiveParam) {
+            flags.add(Flag.SENSITIVE);
+        }
+        if (taintedParam) {
+            flags.add(Flag.TAINTED);
+        }
 
-    @Override
-    public void exitReturnTypeList(BallerinaParser.ReturnTypeListContext ctx) {
-        if (ctx.exception != null) {
-            return;
-        }
-        ParserRuleContext parent = ctx.getParent();
-        boolean inFuncTypeSig = parent instanceof BallerinaParser.FunctionTypeNameContext ||
-                parent instanceof BallerinaParser.ReturnParametersContext &&
-                        parent.parent instanceof BallerinaParser.FunctionTypeNameContext;
-        if (inFuncTypeSig) {
-            this.pkgBuilder.endProcessingTypeNodeList(getWS(ctx), ctx.typeName().size());
-        } else {
-            this.pkgBuilder.endProcessingTypeNodeList(ctx.typeName().size());
-        }
+        this.pkgBuilder.addParameterModifiers(flags);
     }
 
     /**
@@ -1822,29 +1806,6 @@ public class BLangParserListener extends BallerinaParserBaseListener {
      */
     @Override
     public void exitParameterList(BallerinaParser.ParameterListContext ctx) {
-        if (ctx.exception != null) {
-            return;
-        }
-
-        // This attaches WS of the commas to the def.
-        ParserRuleContext parent = ctx.getParent();
-        boolean inFuncTypeSig = parent instanceof BallerinaParser.FunctionTypeNameContext ||
-                parent instanceof BallerinaParser.ReturnParametersContext &&
-                        parent.parent instanceof BallerinaParser.FunctionTypeNameContext;
-        if (parent instanceof BallerinaParser.ConnectorDefinitionContext) {
-            this.pkgBuilder.endConnectorParamList(getWS(ctx));
-        } else if (inFuncTypeSig) {
-            this.pkgBuilder.endFuncTypeParamList(getWS(ctx));
-        } else {
-            this.pkgBuilder.endCallableParamList(getWS(ctx));
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void exitReturnParameterList(BallerinaParser.ReturnParameterListContext ctx) {
         if (ctx.exception != null) {
             return;
         }
