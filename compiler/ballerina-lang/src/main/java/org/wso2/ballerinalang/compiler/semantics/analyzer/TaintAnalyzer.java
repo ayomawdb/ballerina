@@ -191,7 +191,6 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     }
 
     public void visit(BLangCompilationUnit compUnit) {
-        //TODO: Test
         compUnit.topLevelNodes.forEach(e -> ((BLangNode) e).accept(this));
     }
 
@@ -318,7 +317,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     }
 
     public void visit(BLangTransformer transformerNode) {
-        //TODO
+        //TODO Test
         SymbolEnv transformerEnv = SymbolEnv.createTransformerEnv(transformerNode, transformerNode.symbol.scope, env);
         visitInvocable(transformerNode, transformerEnv);
     }
@@ -416,7 +415,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     }
 
     public void visit(BLangXMLNSStatement xmlnsStmtNode) {
-        /* ignore */
+        xmlnsStmtNode.xmlnsDecl.accept(this);
     }
 
     public void visit(BLangExpressionStmt exprStmtNode) {
@@ -821,7 +820,8 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     }
 
     public void visit(BLangXMLAttributeAccess xmlAttributeAccessExpr) {
-        //TODO
+        xmlAttributeAccessExpr.expr.accept(this);
+        /* ignore */
     }
 
     public void visit(BLangIntRangeExpression intRangeExpression) {
