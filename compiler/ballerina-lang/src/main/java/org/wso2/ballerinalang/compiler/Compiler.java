@@ -106,7 +106,7 @@ public class Compiler {
             return;
         }
 
-        taintAnalyze(pkgNode);
+        pkgNode = taintAnalyze(pkgNode);
         if (this.stopCompilation(CompilerPhase.DESUGAR)) {
             return;
         }
@@ -204,6 +204,6 @@ public class Compiler {
     }
 
     private BLangPackage getBuiltInPackage(Name name) {
-        return codeAnalyze(semAnalyzer.analyze(pkgLoader.loadEntryPackage(name.getValue())));
+        return taintAnalyze(codeAnalyze(semAnalyzer.analyze(pkgLoader.loadEntryPackage(name.getValue()))));
     }
 }
