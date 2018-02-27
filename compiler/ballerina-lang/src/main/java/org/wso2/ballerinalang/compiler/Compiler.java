@@ -26,7 +26,7 @@ import org.wso2.ballerinalang.compiler.desugar.Desugar;
 import org.wso2.ballerinalang.compiler.parser.BLangParserException;
 import org.wso2.ballerinalang.compiler.semantics.analyzer.CodeAnalyzer;
 import org.wso2.ballerinalang.compiler.semantics.analyzer.SemanticAnalyzer;
-import org.wso2.ballerinalang.compiler.semantics.analyzer.TaintTableEnter;
+import org.wso2.ballerinalang.compiler.semantics.analyzer.TaintAnalyzer;
 import org.wso2.ballerinalang.compiler.semantics.model.SymbolTable;
 import org.wso2.ballerinalang.compiler.tree.BLangPackage;
 import org.wso2.ballerinalang.compiler.util.CompilerContext;
@@ -49,7 +49,7 @@ public class Compiler {
     private SymbolTable symbolTable;
     private SemanticAnalyzer semAnalyzer;
     private CodeAnalyzer codeAnalyzer;
-    private TaintTableEnter taintTableEnter;
+    private TaintAnalyzer taintAnalyzer;
     private Desugar desugar;
     private CodeGenerator codeGenerator;
 
@@ -77,7 +77,7 @@ public class Compiler {
         this.symbolTable = SymbolTable.getInstance(context);
         this.semAnalyzer = SemanticAnalyzer.getInstance(context);
         this.codeAnalyzer = CodeAnalyzer.getInstance(context);
-        this.taintTableEnter = TaintTableEnter.getInstance(context);
+        this.taintAnalyzer = TaintAnalyzer.getInstance(context);
         this.desugar = Desugar.getInstance(context);
         this.codeGenerator = CodeGenerator.getInstance(context);
 
@@ -106,7 +106,7 @@ public class Compiler {
             return;
         }
 
-        taintTableEnter(pkgNode);
+        taintAnalyze(pkgNode);
         if (this.stopCompilation(CompilerPhase.DESUGAR)) {
             return;
         }
@@ -168,8 +168,8 @@ public class Compiler {
         return codeAnalyzer.analyze(pkgNode);
     }
 
-    private BLangPackage taintTableEnter(BLangPackage pkgNode) {
-        return taintTableEnter.analyze(pkgNode);
+    private BLangPackage taintAnalyze(BLangPackage pkgNode) {
+        return taintAnalyzer.analyze(pkgNode);
     }
 
     private BLangPackage desugar(BLangPackage pkgNode) {
