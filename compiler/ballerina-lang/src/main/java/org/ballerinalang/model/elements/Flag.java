@@ -51,12 +51,16 @@ public enum Flag {
      * this is needed for composer to identify whether user defined type is a connector or not.
      */
     CONNECTOR,
-    /**
-     * Indicates Flagged node is a sensitive node and tainted data should not be passed into the node.
-     */
-    SENSITIVE,
-    /**
-     * Indicates Flagged node is a tainted node.
-     */
-    TAINTED
+//    /**
+//     * Indicates Flagged node is a sensitive node and tainted data should not be passed into the node.
+//     */
+//    SENSITIVE,
+//    /**
+//     * Indicates Flagged node is a tainted node.
+//     */
+//    TAINTED,
+//    /**
+//     * Indicates Flagged node is a untainted node.
+//     */
+//    UNTAINTED
 }

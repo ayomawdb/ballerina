@@ -146,6 +146,10 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     private static final String MAIN_FUNCTION_NAME = "main";
     private static final int ALL_UNTAINTED_TABLE_ENTRY_INDEX = -1;
 
+    private static final String ANNOTATION_TAINTED = "tainted";
+    private static final String ANNOTATION_UNTAINTED = "untainted";
+    private static final String ANNOTATION_SENSITIVE = "sensitive";
+
     public static TaintAnalyzer getInstance(CompilerContext context) {
         TaintAnalyzer taintAnalyzer = context.get(TAINT_ANALYZER_KEY);
         if (taintAnalyzer == null) {
@@ -297,6 +301,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     }
 
     public void visit(BLangAnnotation annotationNode) {
+        annotationNode = annotationNode;
         /* ignore */
     }
 
@@ -586,36 +591,36 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
             invokableNode = (BLangInvokableNode) ((BInvokableSymbol) invocationExpr.symbol).node;
         }
         if (invokableNode.symbol.taintTable == null) {
-           // if (!initialGenerationComplete) {
-                BlockingNode blockingNode = new BlockingNode(invocationExpr.symbol.pkgID, invocationExpr.symbol.name);
-                this.blockedNode = new BlockedNode(this.currPkgSymbol, null, invocationExpr.pos, blockingNode);
-//                List<BlockedNode> nodeList = blockedInvokables.get(blockingNode);
-//                if (nodeList == null) {
-//                    nodeList = new ArrayList<>();
-//                }
-//                nodeList.add(blockedNode);
-
-                //bloc.put(blockingNode, nodeList);
-                //blockedInvokableCount++;
-                stopAnalysis = true;
-           // } else {
-                // This is an indication for invokable to skip any further analysis.
-                // TODO: Improve not to need a dummy object.
-          //      this.blockedNode = new BlockedNode(this.currPkgSymbol, null, null, null);
-          //      stopAnalysis = true;
-           // }
-            //Return a dummy list to make sure following statements do not break.
+            BlockingNode blockingNode = new BlockingNode(invocationExpr.symbol.pkgID, invocationExpr.symbol.name);
+            this.blockedNode = new BlockedNode(this.currPkgSymbol, null, invocationExpr.pos, blockingNode);
+            stopAnalysis = true;
             List<Boolean> returnTaintedStatus = new ArrayList<>();
             invokableNode.retParams.forEach(param -> returnTaintedStatus.add(false));
             taintedStatus = returnTaintedStatus;
         } else {
             Map<Integer, List<Boolean>> taintTable = invokableNode.symbol.taintTable;
             List<Boolean> returnTaintedStatus = taintTable.get(ALL_UNTAINTED_TABLE_ENTRY_INDEX);
-            if (invokableNode.params.size() == 0 && invokableNode.retParams.size() > 0) {
+            if (invocationExpr.expr != null) {
+                invocationExpr.expr.accept(this);
+                if (taintedStatus.get(0)) {
+                    returnTaintedStatus = new ArrayList<>();
+                    for (BLangVariable param : invokableNode.retParams) {
+                        if (hadAnnotation(param, ANNOTATION_UNTAINTED)) {
+                            returnTaintedStatus.add(false);
+                        } else {
+                            returnTaintedStatus.add(true);
+                        }
+                    }
+                    taintedStatus = returnTaintedStatus;
+                    return;
+                }
+            }
+
+            /*if (invokableNode.params.size() == 0 && invokableNode.retParams.size() > 0) {
                 for (BLangVariable retParam : invokableNode.retParams) {
                     returnTaintedStatus.add(retParam.flagSet.contains(Flag.TAINTED));
                 }
-            } else {
+            } else {*/
                 for (int i = 0; i < invocationExpr.argExprs.size(); i++) {
                     invocationExpr.argExprs.get(i).accept(this);
                     // If current argument is tainted, look-up the taint-table for the record of
@@ -648,7 +653,8 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                         }
                     }
                 }
-            }
+
+            //}
             taintedStatus = returnTaintedStatus;
         }
 
@@ -999,7 +1005,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
             // Extract tainted status of native function from the return modifier.
             List<Boolean> retParamsTaintedStatus = new ArrayList<>();
             for (BLangVariable retParam : invNode.retParams) {
-                retParamsTaintedStatus.add(retParam.flagSet.contains(Flag.TAINTED));
+                retParamsTaintedStatus.add(hadAnnotation(retParam, ANNOTATION_TAINTED));
             }
 
             // Add tainted status when no parameter is tainted.
@@ -1011,7 +1017,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                 for (int i = 0; i < params.size(); i++) {
                     // If parameter is sensitive, it is invalid to have a case
                     // where tainted status of parameter is true.
-                    if (params.get(i).flagSet.contains(Flag.SENSITIVE)) {
+                    if (hadAnnotation(params.get(i), ANNOTATION_SENSITIVE)) {
                         continue;
                     }
                     taintTable.put(i, retParamsTaintedStatus);
@@ -1023,29 +1029,21 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
 
     private void resolveBlockedInvokables() {
         while (blockedNodes.size() > 0) {
-            int remainingBlockedInvokableCount = 0;
-            //Map<BlockingNode, List<BlockedNode>> remainingBlockedInvokables = new HashMap<>();
-            //for (BlockingNode blockingNode : blockedInvokables.keySet()) {
-                Set<BlockedNode> remainingBlockedNodes = new HashSet<>();
-                for (BlockedNode blockedNode : blockedNodes) {
-                    this.env = blockedNode.pkgSymbol;
-                    blockedNode.invokableNode.accept(this);
-                    if (blockedNode.invokableNode.symbol.taintTable == null) {
-                        remainingBlockedNodes.add(blockedNode);
-                    }
+            Set<BlockedNode> remainingBlockedNodes = new HashSet<>();
+            for (BlockedNode blockedNode : blockedNodes) {
+                this.env = blockedNode.pkgSymbol;
+                blockedNode.invokableNode.accept(this);
+                if (blockedNode.invokableNode.symbol.taintTable == null) {
+                    remainingBlockedNodes.add(blockedNode);
                 }
-            //}
+            }
             if (blockedNodes.size() == remainingBlockedNodes.size()) {
-                // No block has been resolved. There is a loop of dependencies.
-                //for (BlockingNode blockingNode : remainingBlockedNodes) {
-                 //   List<BlockedNode> blockedNodes = remainingBlockedInvokables.get(blockingNode);
-                    for (BlockedNode blockedNode : blockedNodes) {
-                        attachTaintTableBasedOnFlags(blockedNode.invokableNode);
-                        this.dlog.warning(blockedNode.blockedPos,
-                                DiagnosticCode.UNABLE_TO_PERFORM_TAINT_CHECKING_IN_LOOP,
-                                blockedNode.invokableNode.name.value);
-                    }
-                //}
+                for (BlockedNode blockedNode : blockedNodes) {
+                    attachTaintTableBasedOnFlags(blockedNode.invokableNode);
+                    this.dlog.warning(blockedNode.blockedPos,
+                            DiagnosticCode.UNABLE_TO_PERFORM_TAINT_CHECKING_IN_LOOP,
+                            blockedNode.invokableNode.name.value);
+                }
                 break;
             }
             blockedNodes = remainingBlockedNodes;
@@ -1106,24 +1104,21 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                 this.blockedNode.invokableNode = invNode;
                 if (!initialGenerationComplete) {
                     blockedNodes.add(blockedNode);
-
-//                    this.dlog.error(blockedNode.invokableNode.pos, DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE,
-//                            blockedNode.invokableNode.symbol.pkgID
-//                                    + "/" + blockedNode.invokableNode.symbol.name + " < BLOCKED ON > " +
-//                                    blockedNode.blockingNode.packageID
-//                        + "/" + blockedNode.blockingNode.name);
+                    /*this.dlog.error(blockedNode.invokableNode.pos, DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE,
+                            blockedNode.invokableNode.symbol.pkgID + "/" + blockedNode.invokableNode.symbol.name +
+                            " < BLOCKED ON > " + blockedNode.blockingNode.packageID + "/" +
+                            blockedNode.blockingNode.name);*/
                 }
                 this.blockedNode = null;
                 return;
             }
 
-//            this.dlog.error(invNode.pos, DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE,
-//                    " ANALYZED > " + invNode.symbol.pkgID + "/" + invNode.symbol.name);
-
+            /*this.dlog.error(invNode.pos, DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE, " ANALYZED > " +
+                    invNode.symbol.pkgID + "/" + invNode.symbol.name);*/
             updateBasedOnFlags(taintedStatus, invNode.retParams);
             taintTable.put(ALL_UNTAINTED_TABLE_ENTRY_INDEX, taintedStatus);
             // Compiler error if a return is always tainted, but it has not been marked 'tainted'.
-            if (invNode.retParams != null && invNode.retParams.size() > 0) {
+            /*if (invNode.retParams != null && invNode.retParams.size() > 0) {
                 for (int i = 0; i < taintedStatus.size(); i++) {
                     BLangVariable retParam = invNode.retParams.get(i);
                     if (taintedStatus.get(i) && !retParam.flagSet.contains(Flag.TAINTED)) {
@@ -1131,13 +1126,13 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                         return;
                     }
                 }
-            }
+            }*/
             List<BLangVariable> params = invNode.params;
             for (int i = 0; i < params.size(); i++) {
                 BLangVariable param = params.get(i);
                 // If parameter is sensitive, it is invalid to have a case
                 // where tainted status of parameter is true.
-                if (param.flagSet.contains(Flag.SENSITIVE)) {
+                if (hadAnnotation(param, ANNOTATION_SENSITIVE)) {
                     continue;
                 }
                 // Set new parameter state, analyze the body and see what is the outcome of the function.
@@ -1162,8 +1157,16 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
         for (int i = 0; i < retParams.size(); i++) {
             BLangVariable param = retParams.get(i);
             boolean observedReturnTaintedStatus = taintedStatus.get(i);
-            if (!observedReturnTaintedStatus) {
-                taintedStatus.set(i, param.flagSet.contains(Flag.TAINTED));
+            if (observedReturnTaintedStatus) {
+                // If return is tainted, but return is marked as untainted, overwrite the value.
+                if (hadAnnotation(param, ANNOTATION_UNTAINTED)) {
+                    taintedStatus.set(i, false);
+                }
+            } else {
+                // If return is not tainted, but return is marked as tainted, overwrite the value.
+                if (hadAnnotation(param, ANNOTATION_TAINTED)) {
+                    taintedStatus.set(i, true);
+                }
             }
         }
     }
@@ -1192,6 +1195,11 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                 }
             }
         }
+    }
+
+    private boolean hadAnnotation (BLangVariable variable, String expectedAnnotation) {
+        return variable.annAttachments.stream()
+                .filter(annotation -> annotation.annotationName.value.equals(expectedAnnotation)).count() > 0;
     }
     
     private class BlockingNode {
