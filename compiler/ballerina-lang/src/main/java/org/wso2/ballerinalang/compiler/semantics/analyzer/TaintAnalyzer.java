@@ -1,7 +1,6 @@
 package org.wso2.ballerinalang.compiler.semantics.analyzer;
 
 import org.ballerinalang.compiler.CompilerPhase;
-import org.ballerinalang.model.elements.Flag;
 import org.ballerinalang.model.elements.PackageID;
 import org.ballerinalang.model.tree.NodeKind;
 import org.ballerinalang.model.tree.OperatorKind;
@@ -140,7 +139,6 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     private BlockedNode blockedNode;
     private boolean entrypointAnalysis;
 
-    //TODO Improve with a stack (perf)
     private Set<BlockedNode> blockedNodes = new HashSet<>();
 
     private static final String MAIN_FUNCTION_NAME = "main";
