@@ -164,6 +164,10 @@ public enum DiagnosticCode {
     MISMATCHED_INPUT("mismatched.input"),
     FAILED_PREDICATE("failed.predicate"),
     SYNTAX_ERROR("syntax.error"),
+
+    // Taint checking related codes
+    TAINTED_VALUE_PASSED_TO_SENSITIVE_PARAMETER("tainted.value.passed.to.sensitive.parameter"),
+    UNABLE_TO_PERFORM_TAINT_CHECKING_WITH_INVOCATION_LOOP("unable.to.perform.taint.checking.with.invocation.loop")
     ;
 
     private String value;
