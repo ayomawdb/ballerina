@@ -1,12 +1,11 @@
 public function main (string[] args) {
-    // untainted data replaced by tainted value, again replaced by untainted value.
+    // untainted data - replaced by tainted value.
     string data = "sample";
     data = data + args[0];
-    data = "replace";
     secureFunction(data, data);
 
-    // concat untainted values.
-    string data1 = testConcatHelper("sample", "sample");
+    // concat untainted value with tainted value.
+    string data1 = testConcatHelper("sample", args[0]);
     secureFunction(data1, data1);
 }
 

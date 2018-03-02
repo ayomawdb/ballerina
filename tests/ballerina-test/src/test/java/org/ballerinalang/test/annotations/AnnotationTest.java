@@ -257,7 +257,7 @@ public class AnnotationTest {
     @Test(description = "Test multi-typed attribute value array")
     public void testMultiTypedAttributeArray() {
         CompileResult resultNegative = BCompileUtil
-                .compile(this, "test-src", "lang/annotations/multityped-attribute-array.bal");
+                .compile(this, "test-src", "lang/annotations/multityped-attribute-array-negative.bal");
         Assert.assertEquals(resultNegative.getErrorCount(), 1);
         BAssertUtil.validateError(resultNegative, 0,
                 "incompatible types: expected 'lang.annotations.doc:QueryParam', found 'string'", 5, 42);

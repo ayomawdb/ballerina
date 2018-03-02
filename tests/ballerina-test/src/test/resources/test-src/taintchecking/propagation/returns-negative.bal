@@ -1,6 +1,6 @@
 public function main (string[] args) {
-    secureFunction(namedReturn("static"), namedReturn("static"));
-    secureFunction(typeReturn("static"), typeReturn("static"));
+    secureFunction(namedReturn(args[0]), namedReturn(args[0]));
+    secureFunction(typeReturn(args[0]), typeReturn(args[0]));
 }
 
 public function secureFunction (@sensitive{} string secureIn, string insecureIn) {
