@@ -123,7 +123,9 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     private boolean entryPointAnalysis;
     private boolean stopAnalysis;
 
-    private TaintError taintError;
+    //private TaintError taintError;
+    private List<TaintError> taintErrors = new ArrayList<>();
+
     private BlockedNode blockedNode;
     private Set<BlockedNode> blockedNodes = new HashSet<>();
 
@@ -263,9 +265,9 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                 } else {
                     analyzeNode(varNode.expr, varInitEnv);
                 }
-                if (taintedStatusList == null || taintedStatusList.size() == 0) {
-                    varNode.expr = varNode.expr;
-                }
+//                if (taintedStatusList == null || taintedStatusList.size() == 0) {
+//                    varNode.expr = varNode.expr;
+//                }
                 setTaintedStatus(varNode, taintedStatusList.get(0));
             }
         }
@@ -573,34 +575,15 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                 return;
             }
         } else if (invocationExpr.iterableOperationInvocation) {
+            // If iteration happens on a tainted expression.
             invocationExpr.expr.accept(this);
             if (taintedStatusList.get(0)) {
                 if (invocationExpr.argExprs != null) {
-                    invocationExpr.argExprs.forEach(expr -> {
-                        if (expr instanceof BLangLambdaFunction) {
-                            BLangFunction function = ((BLangLambdaFunction) expr).function;
-                            if (function.symbol.taintTable == null) {
-                                addToBlockedList(invocationExpr, 1);
-                            } else {
-                                Map<Integer, List<Boolean>> taintTable = function.symbol.taintTable;
-                                // If expr is tainted, all arguments are considered tainted. Hence, if any argument
-                                // is tainted, generate error.
-                                for (int i = 0; i < function.params.size(); i++) {
-                                    List<Boolean> taintedStatusRecord = taintTable.get(i);
-                                    if (taintedStatusRecord == null) {
-                                        if (entryPointAnalysis) {
-                                            this.dlog.error(invocationExpr.pos,
-                                                    DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE_PARAMETER,
-                                                    function.params.get(i).name.value);
-                                        } else {
-                                            taintError = new TaintError(invocationExpr.pos,
-                                                    function.params.get(i).name.value);
-                                            stopAnalysis = true;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
+                    invocationExpr.argExprs.forEach(argExpr -> {
+                        // If argument of iterable operation is a lambda expression, propagate the tainted status
+                        // to function parameters and validate function body.
+                        if (argExpr instanceof BLangLambdaFunction) {
+                            analyzeLambdaExpressions(invocationExpr, argExpr);
                         }
                     });
                 }
@@ -613,6 +596,34 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
             addToBlockedList(invocationExpr, invokableNode.retParams.size());
         } else {
             setTaintedStatus(invocationExpr, invokableNode);
+        }
+    }
+
+    private void analyzeLambdaExpressions(BLangInvocation invocationExpr, BLangExpression argExpr) {
+            BLangFunction function = ((BLangLambdaFunction) argExpr).function;
+            if (function.symbol.taintTable == null) {
+                addToBlockedList(invocationExpr, 1);
+            } else {
+                Map<Integer, List<Boolean>> taintTable = function.symbol.taintTable;
+                // If expr is tainted, all arguments are considered tainted. Hence, if any argument
+                // is tainted, generate error.
+                for (int i = 0; i < function.params.size(); i++) {
+                    List<Boolean> taintedStatusRecord = taintTable.get(i);
+                    if (taintedStatusRecord == null) {
+                        generateTaintError(invocationExpr.pos, function.params.get(i).name.value);
+                        if (stopAnalysis) {
+                            break;
+                        }
+                    }
+                }
+            }
+    }
+
+    private void generateTaintError(DiagnosticPos diagnosticPos, String paramName) {
+        TaintError taintError = new TaintError(diagnosticPos, paramName);
+        taintErrors.add(taintError);
+        if (!entryPointAnalysis) {
+            stopAnalysis = true;
         }
     }
 
@@ -629,7 +640,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
 
     private void setTaintedStatus(BLangInvocation invocationExpr, BLangInvokableNode invokableNode) {
         Map<Integer, List<Boolean>> taintTable = invokableNode.symbol.taintTable;
-        List<Boolean> returnTaintedStatus = taintTable.get(ALL_UNTAINTED_TABLE_ENTRY_INDEX);
+        List<Boolean> returnTaintedStatus = new ArrayList<>(taintTable.get(ALL_UNTAINTED_TABLE_ENTRY_INDEX));
 
             if (invocationExpr.argExprs != null) {
                 for (int i = 0; i < invocationExpr.argExprs.size(); i++) {
@@ -642,13 +653,8 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                         // This is null when current parameter is sensitive. Therefore, providing a tainted
                         // value to a sensitive parameter is invalid and should return a compiler error.
                         if (taintedStatusRecord == null) {
-                            if (entryPointAnalysis) {
-                                this.dlog.error(invocationExpr.pos,
-                                        DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE_PARAMETER,
-                                        invokableNode.params.get(i).name.value);
-                            } else {
-                                taintError = new TaintError(invocationExpr.pos, invokableNode.params.get(i).name.value);
-                                stopAnalysis = true;
+                            generateTaintError(invocationExpr.pos, invokableNode.params.get(i).name.value);
+                            if (stopAnalysis) {
                                 break;
                             }
                         } else {
@@ -971,11 +977,12 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     }
 
     private void visitEntrypoint(BLangInvokableNode invNode, SymbolEnv funcEnv) {
-        entryPointAnalysis = true;
         if (invNode.params != null) {
             invNode.params.forEach(param -> param.symbol.tainted = true);
         }
+        entryPointAnalysis = true;
         analyzeReturnTaintedStatus(invNode, funcEnv);
+        entryPointAnalysis = false;
         if (this.blockedNode != null) {
             // Set the function being analyzed to the map and clean the tree for next invocation.
             this.blockedNode.invokableNode = invNode;
@@ -983,11 +990,17 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                 blockedNodes.add(blockedNode);
             }
             this.blockedNode = null;
+            // Discard any error generated when going through blocked invokable, to avoid duplicates.
+            taintErrors.clear();
             return;
+        } else {
+            taintErrors.forEach(error -> {
+                this.dlog.error(error.pos, DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE_PARAMETER, error.paramName);
+            });
+            taintErrors.clear();
         }
         invNode.symbol.taintTable = new HashMap<>();
         invNode.params.forEach(param -> param.symbol.tainted = false);
-        entryPointAnalysis = false;
     }
 
     private void visitInvokable(BLangInvokableNode invNode, SymbolEnv symbolEnv) {
@@ -1039,11 +1052,11 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
             invNode.params.get(paramIndex).symbol.tainted = true;
         }
         analyzeReturnTaintedStatus(invNode, symbolEnv);
-        if (taintError != null) {
+        if (taintErrors.size() > 0) {
             // When invocation returns an error, due to passing a tainted argument to a sensitive parameter
             // skip adding the current invalid combination to the table. This will infer the sensitive
             // state of invocations, into owner.
-            taintError = null;
+            taintErrors.clear();
         } else {
             if (invNode.retParams.size() == 0) {
                 returnTaintedStatusList = new ArrayList<>();
@@ -1083,7 +1096,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
         } else {
             for (BLangWorker worker : invNode.workers) {
                 analyzeNode(worker, symbolEnv);
-                if (this.blockedNode != null || taintError != null) {
+                if (this.blockedNode != null || taintErrors.size() > 0) {
                     break;
                 }
             }
@@ -1135,7 +1148,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
         public BLangInvokableNode invokableNode;
         public DiagnosticPos blockedPos;
 
-        public BlockedNode(SymbolEnv pkgSymbol, BLangInvokableNode invokableNode, DiagnosticPos blockedPos, 
+        public BlockedNode(SymbolEnv pkgSymbol, BLangInvokableNode invokableNode, DiagnosticPos blockedPos,
                            BlockingNode blockingNode) {
             this.pkgSymbol = pkgSymbol;
             this.invokableNode = invokableNode;
