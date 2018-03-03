@@ -284,7 +284,7 @@ public class TaintedStatusPropagationTest {
         BAssertUtil.validateError(result, 1, "tainted value passed to sensitive parameter 'word'", 5, 5);
     }
 
-/*    @Test
+    @Test
     public void testForEach() {
         CompileResult result = BCompileUtil
                 .compile("test-src/taintchecking/propagation/foreach.bal");
@@ -296,8 +296,8 @@ public class TaintedStatusPropagationTest {
         CompileResult result = BCompileUtil
                 .compile("test-src/taintchecking/propagation/foreach-negative.bal");
         Assert.assertTrue(result.getDiagnostics().length == 1);
-        BAssertUtil.validateError(result, 0, "tainted value passed to sensitive parameter 'secureIn'", 5, 5);
-    }*/
+        BAssertUtil.validateError(result, 0, "tainted value passed to sensitive parameter 'secureIn'", 5, 9);
+    }
 
     @Test
     public void testHttpService() {
