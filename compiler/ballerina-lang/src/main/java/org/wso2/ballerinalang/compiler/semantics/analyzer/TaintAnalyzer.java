@@ -338,6 +338,17 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
             if (multiReturnHandledProperly) {
                 taintedCheckResult = taintedStatusList.get(i);
             }
+            if (expr instanceof BLangVariableReference) {
+                //TODO: Any better way to identify global variables
+                if (((BLangVariableReference) expr).symbol != null
+                        && ((BLangVariableReference) expr).symbol.owner instanceof BPackageSymbol) {
+                    if (taintedCheckResult) {
+                        generateTaintError(assignNode.pos, ((BLangVariableReference) expr).symbol.name.value,
+                                DiagnosticCode.TAINTED_VALUE_PASSED_TO_GLOBAL_VARIABLE);
+                        return;
+                    }
+                }
+            }
             // TODO: Re-evaluating the full data-set (array) when a change occur.
             if (expr instanceof BLangIndexBasedAccess) {
                 nonOverridingContext = true;
@@ -438,6 +449,11 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
 
     public void visit(BLangForeach foreach) {
         SymbolEnv blockEnv = SymbolEnv.createBlockEnv(foreach.body, env);
+        foreach.collection.accept(this);
+        if (taintedStatusList.get(0)) {
+            foreach.varRefs.forEach(varRef -> setTaintedStatus((BLangVariableReference) varRef,
+                    taintedStatusList.get(0)));
+        }
         analyzeNode(foreach.body, blockEnv);
     }
 
@@ -610,7 +626,8 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                 for (int i = 0; i < function.params.size(); i++) {
                     List<Boolean> taintedStatusRecord = taintTable.get(i);
                     if (taintedStatusRecord == null) {
-                        generateTaintError(invocationExpr.pos, function.params.get(i).name.value);
+                        generateTaintError(invocationExpr.pos, function.params.get(i).name.value,
+                                DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE_PARAMETER);
                         if (stopAnalysis) {
                             break;
                         }
@@ -619,8 +636,8 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
             }
     }
 
-    private void generateTaintError(DiagnosticPos diagnosticPos, String paramName) {
-        TaintError taintError = new TaintError(diagnosticPos, paramName);
+    private void generateTaintError(DiagnosticPos diagnosticPos, String paramName, DiagnosticCode diagnosticCode) {
+        TaintError taintError = new TaintError(diagnosticPos, paramName, diagnosticCode);
         taintErrors.add(taintError);
         if (!entryPointAnalysis) {
             stopAnalysis = true;
@@ -640,7 +657,15 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
 
     private void setTaintedStatus(BLangInvocation invocationExpr, BLangInvokableNode invokableNode) {
         Map<Integer, List<Boolean>> taintTable = invokableNode.symbol.taintTable;
-        List<Boolean> returnTaintedStatus = new ArrayList<>(taintTable.get(ALL_UNTAINTED_TABLE_ENTRY_INDEX));
+        List<Boolean> returnTaintedStatus;
+        if (taintTable.get(ALL_UNTAINTED_TABLE_ENTRY_INDEX) != null) {
+            returnTaintedStatus = new ArrayList<>(taintTable.get(ALL_UNTAINTED_TABLE_ENTRY_INDEX));
+        } else {
+            returnTaintedStatus = new ArrayList<>();
+            for (int i = 0; invokableNode.retParams.size() < i; i++) {
+                returnTaintedStatus.add(false);
+            }
+        }
 
             if (invocationExpr.argExprs != null) {
                 for (int i = 0; i < invocationExpr.argExprs.size(); i++) {
@@ -653,7 +678,8 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
                         // This is null when current parameter is sensitive. Therefore, providing a tainted
                         // value to a sensitive parameter is invalid and should return a compiler error.
                         if (taintedStatusRecord == null) {
-                            generateTaintError(invocationExpr.pos, invokableNode.params.get(i).name.value);
+                            generateTaintError(invocationExpr.pos, invokableNode.params.get(i).name.value,
+                                    DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE_PARAMETER);
                             if (stopAnalysis) {
                                 break;
                             }
@@ -995,7 +1021,7 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
             return;
         } else {
             taintErrors.forEach(error -> {
-                this.dlog.error(error.pos, DiagnosticCode.TAINTED_VALUE_PASSED_TO_SENSITIVE_PARAMETER, error.paramName);
+                this.dlog.error(error.pos, error.diagnosticCode, error.paramName);
             });
             taintErrors.clear();
         }
@@ -1182,10 +1208,12 @@ public class TaintAnalyzer  extends BLangNodeVisitor {
     private class TaintError {
         public DiagnosticPos pos;
         public String paramName;
+        public DiagnosticCode diagnosticCode;
 
-        public TaintError(DiagnosticPos pos, String paramName) {
+        public TaintError(DiagnosticPos pos, String paramName, DiagnosticCode diagnosticCode) {
             this.pos = pos;
             this.paramName = paramName;
+            this.diagnosticCode = diagnosticCode;
         }
     }
 }

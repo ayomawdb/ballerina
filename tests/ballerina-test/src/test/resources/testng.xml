@@ -28,7 +28,7 @@ under the License.
     <!-- Ballerina language Test Cases. -->
     <test name="ballerina-lang-test-suite" preserve-order="true" parallel="false">
         <packages>
-            <!--<package name="org.ballerinalang.test.vm.*"/>
+            <package name="org.ballerinalang.test.vm.*"/>
             <package name="org.ballerinalang.test.annotations.*"/>
             <package name="org.ballerinalang.test.expressions.*"/>
             <package name="org.ballerinalang.test.documentation.*"/>
@@ -49,7 +49,7 @@ under the License.
             <package name="org.ballerinalang.test.task.*"/>
             <package name="org.ballerinalang.test.caching.*"/>
             <package name="org.ballerinalang.test.mime.*"/>
-            <package name="org.ballerinalang.test.collections.*"/>-->
+            <package name="org.ballerinalang.test.collections.*"/>
             <package name="org.ballerinalang.test.taintchecking.*"/>
         </packages>
     </test>

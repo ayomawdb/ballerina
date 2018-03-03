@@ -1,6 +1,8 @@
 public function main (string[] args) {
     string data = args[0];
 
+    xmlns "http://ballerina.com/updated" as ns0;
+
     xml x1 = xml `<book>The Lost World{{data}}</book>`;
     secureFunction(x1, x1);
 

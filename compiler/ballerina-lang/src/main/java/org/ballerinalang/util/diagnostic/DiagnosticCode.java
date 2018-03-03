@@ -167,6 +167,7 @@ public enum DiagnosticCode {
 
     // Taint checking related codes
     TAINTED_VALUE_PASSED_TO_SENSITIVE_PARAMETER("tainted.value.passed.to.sensitive.parameter"),
+    TAINTED_VALUE_PASSED_TO_GLOBAL_VARIABLE("tainted.value.passed.to.global.variable"),
     UNABLE_TO_PERFORM_TAINT_CHECKING_WITH_INVOCATION_LOOP("unable.to.perform.taint.checking.with.invocation.loop")
     ;
 

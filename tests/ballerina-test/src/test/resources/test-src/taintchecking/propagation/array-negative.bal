@@ -17,6 +17,15 @@ public function main (string[] args) {
     data3[0] = args[0];
     data3[0] = "BallerinaNew";
     secureFunction(data3[0], data3[0]);
+
+    // tainted array of arrays
+    string[][] data4 = [["Ballerina", "Colombo"], ["BallerinaNew", args[0]]];
+    secureFunction(data4[0][0], data4[0][0]);
+
+    // tainted array of arrays
+    string[][] data5 = [["Ballerina", "Colombo"], ["BallerinaNew", "Kandy"]];
+    data5[1][1] = args[0];
+    secureFunction(data5[0][0], data5[0][0]);
 }
 
 public function secureFunction (@sensitive{} string secureIn, string insecureIn) {
