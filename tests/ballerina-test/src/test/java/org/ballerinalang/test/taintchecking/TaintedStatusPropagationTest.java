@@ -281,7 +281,7 @@ public class TaintedStatusPropagationTest {
                 .compile("test-src/taintchecking/propagation/iterable-negative.bal");
         Assert.assertTrue(result.getDiagnostics().length == 2);
         BAssertUtil.validateError(result, 0, "tainted value passed to sensitive parameter 'secureIn'", 3, 5);
-        BAssertUtil.validateError(result, 1, "tainted value passed to sensitive parameter 'word'", 5, 5);
+        BAssertUtil.validateError(result, 1, "tainted value passed to sensitive parameter 'secureIn'", 5, 43);
     }
 
     @Test
@@ -297,6 +297,36 @@ public class TaintedStatusPropagationTest {
                 .compile("test-src/taintchecking/propagation/foreach-negative.bal");
         Assert.assertTrue(result.getDiagnostics().length == 1);
         BAssertUtil.validateError(result, 0, "tainted value passed to sensitive parameter 'secureIn'", 5, 9);
+    }
+
+    @Test
+    public void testMultipleInvocationLevels() {
+        CompileResult result = BCompileUtil
+                .compile("test-src/taintchecking/propagation/multiple-invocation-levels.bal");
+        Assert.assertTrue(result.getDiagnostics().length == 0);
+    }
+
+    @Test
+    public void testMultipleInvocationLevelsNegative() {
+        CompileResult result = BCompileUtil
+                .compile("test-src/taintchecking/propagation/multiple-invocation-levels-negative.bal");
+        Assert.assertTrue(result.getDiagnostics().length == 1);
+        BAssertUtil.validateError(result, 0, "tainted value passed to sensitive parameter 'secureIn'", 10, 5);
+    }
+
+    @Test
+    public void testGlobalVariables() {
+        CompileResult result = BCompileUtil
+                .compile("test-src/taintchecking/propagation/global-variables.bal");
+        Assert.assertTrue(result.getDiagnostics().length == 0);
+    }
+
+    @Test
+    public void testGlobalVariablesNegative() {
+        CompileResult result = BCompileUtil
+                .compile("test-src/taintchecking/propagation/global-variables-negative.bal");
+        Assert.assertTrue(result.getDiagnostics().length == 1);
+        BAssertUtil.validateError(result, 0, "tainted value passed to global variable 'globalVariable'", 12, 5);
     }
 
     @Test
