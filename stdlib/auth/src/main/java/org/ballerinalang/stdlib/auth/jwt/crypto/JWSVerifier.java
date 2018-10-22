@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.ballerinalang.stdlib.internal.jwt.crypto;
+package org.ballerinalang.stdlib.auth.jwt.crypto;
 
 /**
  * JSON web signature verifier.

@@ -50,4 +50,4 @@ type KeyStore record {
 #
 # + s - JSON string
 # + return - JSON object.
-public extern function parseJson(string s) returns (json|error);
+extern function parseJson(string s) returns (json|error);

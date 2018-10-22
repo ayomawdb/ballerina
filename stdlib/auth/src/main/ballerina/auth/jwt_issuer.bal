@@ -36,9 +36,9 @@ public type JWTIssuerConfig record {
 # + config - JWTIssuerConfig object
 # + return - JWT token string or an error if token validation fails
 public function issue(JwtHeader header, JwtPayload payload, JWTIssuerConfig config) returns (string|error) {
-    string jwtHeader = createHeader(header);
+    string jwtHeader = composeHeaderString(header);
     string jwtPayload = "";
-    match createPayload(payload) {
+    match composePayloadString(payload) {
         error e => return e;
         string result => jwtPayload = result;
     }
@@ -52,7 +52,7 @@ public function issue(JwtHeader header, JwtPayload payload, JWTIssuerConfig conf
     return (jwtAssertion + "." + signature);
 }
 
-function createHeader(JwtHeader header) returns (string) {
+function composeHeaderString(JwtHeader header) returns (string) {
     json headerJson = {};
     headerJson[ALG] = header.alg;
     headerJson[TYP] = "JWT";
@@ -62,7 +62,7 @@ function createHeader(JwtHeader header) returns (string) {
     return encodedPayload;
 }
 
-function createPayload(JwtPayload payload) returns (string|error) {
+function composePayloadString(JwtPayload payload) returns (string|error) {
     json payloadJson = {};
     if (!validateMandatoryFields(payload)) {
         error err = {message:"Mandatory fields(Issuer, Subject, Expiration time or Audience) are empty."};

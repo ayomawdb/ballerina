@@ -16,32 +16,29 @@
  * under the License.
  */
 
-package org.ballerinalang.stdlib.internal.jwt.crypto;
+package org.ballerinalang.stdlib.auth.jwt.crypto;
 
 /**
- * A checked exception for wrapping potential exceptions thrown during JWT signature processing.
+ * JSON Web Signature (JWS) algorithm name, represents the {@code alg} header
+ * parameter in JWS objects.
  *
  * @since 0.964.0
  */
-public class JWSException extends Exception {
+public final class JWSAlgorithm {
 
     /**
-     * Constructs a new JWSException with the specified message.
-     *
-     * @param message Error message
+     * RSASSA-PKCS-v1_5 SHA-256 hash algorithm.
      */
-    public JWSException(String message) {
-        super(message);
-    }
+    public static final String RS256 = "RS256";
 
     /**
-     * Constructs a new JWSException with the specified message.
-     *
-     * @param message Error message
-     * @param cause   The cause of the failure
+     * RSASSA-PKCS-v1_5 SHA-384 hash algorithm.
      */
-    public JWSException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    public static final String RS384 = "RS384";
+
+    /**
+     * RSASSA-PKCS-v1_5 SHA-512 hash algorithm (optional).
+     */
+    public static final String RS512 = "RS512";
 
 }

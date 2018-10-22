@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/cache;
-import ballerina/internal;
 import ballerina/log;
 import ballerina/runtime;
 import ballerina/time;
@@ -42,7 +41,7 @@ public type JWTAuthProvider object {
     public function authenticate(string jwtToken) returns boolean|error {
         if (self.authCache.hasKey(jwtToken)) {
             match self.authenticateFromCache(jwtToken) {
-                internal:JwtPayload payload => {
+                JwtPayload payload => {
                     setAuthContext(payload, jwtToken);
                     return true;
                 }
@@ -52,8 +51,8 @@ public type JWTAuthProvider object {
             }
         }
 
-        match internal:validate(jwtToken, self.jwtAuthProviderConfig) {
-            internal:JwtPayload payload => {
+        match validate(jwtToken, self.jwtAuthProviderConfig) {
+            JwtPayload payload => {
                 setAuthContext(payload, jwtToken);
                 self.addToAuthenticationCache(jwtToken, payload.exp, payload);
                 return true;
@@ -62,12 +61,12 @@ public type JWTAuthProvider object {
         }
     }
 
-    function authenticateFromCache(string jwtToken) returns internal:JwtPayload|() {
+    function authenticateFromCache(string jwtToken) returns JwtPayload|() {
         match <CachedJWTAuthContext>self.authCache.get(jwtToken) {
             CachedJWTAuthContext context => {
                 // convert to current time and check the expiry time
                 if (context.expiryTime > (time:currentTime().time / 1000)) {
-                    internal:JwtPayload payload = context.jwtPayload;
+                    JwtPayload payload = context.jwtPayload;
                     log:printDebug("Authenticate user :" + payload.sub + " from cache");
                     return payload;
                 }
@@ -77,7 +76,7 @@ public type JWTAuthProvider object {
         return ();
     }
 
-    function addToAuthenticationCache(string jwtToken, int exp, internal:JwtPayload payload) {
+    function addToAuthenticationCache(string jwtToken, int exp, JwtPayload payload) {
         CachedJWTAuthContext cachedContext = {};
         cachedContext.jwtPayload = payload;
         cachedContext.expiryTime = exp;
@@ -85,7 +84,7 @@ public type JWTAuthProvider object {
         log:printDebug("Add authenticated user :" + payload.sub + " to the cache");
     }
 
-    function setAuthContext(internal:JwtPayload jwtPayload, string jwtToken) {
+    function setAuthContext(JwtPayload jwtPayload, string jwtToken) {
         runtime:UserPrincipal userPrincipal = runtime:getInvocationContext().userPrincipal;
         userPrincipal.userId = jwtPayload.sub;
         // By default set sub as username.
@@ -138,7 +137,7 @@ public type JWTAuthProviderConfig record {
 };
 
 type CachedJWTAuthContext record {
-    internal:JwtPayload jwtPayload;
+    JwtPayload jwtPayload;
     int expiryTime;
     !...
 };

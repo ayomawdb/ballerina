@@ -19,7 +19,6 @@ import ballerina/runtime;
 import ballerina/time;
 import ballerina/config;
 import ballerina/crypto;
-import ballerina/internal;
 import ballerina/system;
 
 public type ConfigJwtAuthProvider object {
@@ -44,11 +43,11 @@ public type ConfigJwtAuthProvider object {
 };
 
 function setAuthToken(string username, ConfigJwtAuthProviderConfig authConfig) {
-    internal:JwtHeader header = createHeader(authConfig);
-    internal:JwtPayload payload = createPayload(username, authConfig);
+    JwtHeader header = createHeader(authConfig);
+    JwtPayload payload = createPayload(username, authConfig);
 
-    internal:JWTIssuerConfig config = createJWTIssueConfig(authConfig);
-    match internal:issue(header, payload, config) {
+    JWTIssuerConfig config = createJWTIssueConfig(authConfig);
+    match issue(header, payload, config) {
         string token => {
             runtime:AuthContext authContext = runtime:getInvocationContext().authContext;
             authContext.scheme = "jwt";
@@ -60,15 +59,15 @@ function setAuthToken(string username, ConfigJwtAuthProviderConfig authConfig) {
     }
 }
 
-function createHeader(ConfigJwtAuthProviderConfig authConfig) returns (internal:JwtHeader) {
-    internal:JwtHeader header = {};
+function createHeader(ConfigJwtAuthProviderConfig authConfig) returns (JwtHeader) {
+    JwtHeader header = {};
     header.alg = authConfig.signingAlg;
     header.typ = "JWT";
     return header;
 }
 
-function createPayload(string username, ConfigJwtAuthProviderConfig authConfig) returns (internal:JwtPayload) {
-    internal:JwtPayload payload = {};
+function createPayload(string username, ConfigJwtAuthProviderConfig authConfig) returns (JwtPayload) {
+    JwtPayload payload = {};
     payload.sub = username;
     payload.iss = authConfig.issuer;
     payload.exp = time:currentTime().time / 1000 + authConfig.expTime;
@@ -80,8 +79,8 @@ function createPayload(string username, ConfigJwtAuthProviderConfig authConfig) 
     return payload;
 }
 
-function createJWTIssueConfig(ConfigJwtAuthProviderConfig authConfig) returns (internal:JWTIssuerConfig) {
-    internal:JWTIssuerConfig config = {};
+function createJWTIssueConfig(ConfigJwtAuthProviderConfig authConfig) returns (JWTIssuerConfig) {
+    JWTIssuerConfig config = {};
     config.keyAlias = authConfig.keyAlias;
     config.keyPassword = authConfig.keyPassword;
     config.keyStoreFilePath = authConfig.keyStoreFilePath;

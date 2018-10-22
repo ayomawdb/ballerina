@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.ballerinalang.stdlib.internal.jwt.signature;
+package org.ballerinalang.stdlib.auth.jwt.signature;
 
 import org.ballerinalang.bre.Context;
 import org.ballerinalang.bre.bvm.BLangVMErrors;
@@ -28,9 +28,9 @@ import org.ballerinalang.model.values.BValue;
 import org.ballerinalang.natives.annotations.Argument;
 import org.ballerinalang.natives.annotations.BallerinaFunction;
 import org.ballerinalang.natives.annotations.ReturnType;
-import org.ballerinalang.stdlib.internal.jwt.crypto.JWSVerifier;
-import org.ballerinalang.stdlib.internal.jwt.crypto.RSAVerifier;
-import org.ballerinalang.stdlib.internal.jwt.crypto.TrustStoreHolder;
+import org.ballerinalang.stdlib.auth.jwt.crypto.JWSVerifier;
+import org.ballerinalang.stdlib.auth.jwt.crypto.RSAVerifier;
+import org.ballerinalang.stdlib.auth.jwt.crypto.TrustStoreHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,7 +42,7 @@ import java.security.interfaces.RSAPublicKey;
  * @since 0.964.0
  */
 @BallerinaFunction(
-        orgName = "ballerina", packageName = "internal",
+        orgName = "ballerina", packageName = "auth",
         functionName = "verifySignature",
         args = {
                 @Argument(name = "data", type = TypeKind.STRING),
