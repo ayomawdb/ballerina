@@ -38,7 +38,7 @@ public class ResourceLevelAuthTest extends AuthBaseTest {
             throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Basic aXN1cnU6eHh4");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headers);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 200, "Response code mismatched");
@@ -49,7 +49,7 @@ public class ResourceLevelAuthTest extends AuthBaseTest {
             throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Basic aXNoYXJhOmFiYw==");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headers);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 403, "Response code mismatched");
@@ -60,7 +60,7 @@ public class ResourceLevelAuthTest extends AuthBaseTest {
             throws Exception {
         Map<String, String> headers = new HashMap<>();
         headers.put("Authorization", "Basic dGVzdDp0ZXN0MTIz");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headers);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 401, "Response code mismatched");

@@ -19,7 +19,13 @@ import ballerina/io;
 import ballerina/auth;
 
 endpoint http:APIListener listener7 {
-    port:9098
+    port:9098,
+    secureSocket: {
+        keyStore: {
+            path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
+            password: "ballerina"
+        }
+    }
 };
 
 service<http:Service> echo7 bind listener7 {

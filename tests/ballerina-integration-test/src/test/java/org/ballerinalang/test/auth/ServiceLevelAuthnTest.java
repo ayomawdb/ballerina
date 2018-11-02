@@ -41,7 +41,7 @@ public class ServiceLevelAuthnTest extends AuthBaseTest {
         Map<String, String> headers = new HashMap<>();
         headers.put(HttpHeaderNames.CONTENT_TYPE.toString(), TestConstant.CONTENT_TYPE_TEXT_PLAIN);
         headers.put("Authorization", "Basic aXN1cnU6eHh4");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headers);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 200, "Response code mismatched");
@@ -52,7 +52,7 @@ public class ServiceLevelAuthnTest extends AuthBaseTest {
         Map<String, String> headers = new HashMap<>();
         headers.put(HttpHeaderNames.CONTENT_TYPE.toString(), TestConstant.CONTENT_TYPE_TEXT_PLAIN);
         headers.put("Authorization", "Basic aXNoYXJhOmFiYw==");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headers);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 403, "Response code mismatched");
@@ -63,7 +63,7 @@ public class ServiceLevelAuthnTest extends AuthBaseTest {
         Map<String, String> headers = new HashMap<>();
         headers.put(HttpHeaderNames.CONTENT_TYPE.toString(), TestConstant.CONTENT_TYPE_TEXT_PLAIN);
         headers.put("Authorization", "Basic dGVzdDp0ZXN0MTIz");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headers);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 401, "Response code mismatched");
@@ -93,7 +93,7 @@ public class ServiceLevelAuthnTest extends AuthBaseTest {
                 "18xqUzweCRL-DLAAYwjbzGQ56ekbEdAg02sFco4aozOyt8OUDwS9cH_JlhUn2JEHmVKaatljEnfgRc8fOW6Y5IJ7dOPp7ra5e" +
                 "00sk7JwYY8wKaZWxAGSgRpWgTY6C4XRjGIsR5ZWQdXCAnV27idGDrtR2uG4YQwCWUCzA");
         HttpResponse response = HttpClientRequest.doGet(serverInstance
-                        .getServiceURLHttp(servicePortForExpiredCertificateTest, "echo10/test10"),
+                        .getServiceURLHttps(servicePortForExpiredCertificateTest, "echo10/test10"),
                 headersMap);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 401, "Response code mismatched");

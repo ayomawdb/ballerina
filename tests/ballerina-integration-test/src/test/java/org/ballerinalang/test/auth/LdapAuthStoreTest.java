@@ -41,7 +41,7 @@ public class LdapAuthStoreTest extends AuthBaseTest {
     public void testAuthenticationWithInvalidCredentials() throws Exception {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Authorization", "Basic dmlqaXRoYTp2aWppdGhhQDEyMw==");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort,
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort,
                 "ldapAuth/disableAuthz"), headersMap);
         assertResponse(response, 401, "Authentication failure");
     }
@@ -50,7 +50,7 @@ public class LdapAuthStoreTest extends AuthBaseTest {
     public void testAuthenticationWithLDAPAuthstoreWithoutAuthorization() throws Exception {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Authorization", "Basic dmlqaXRoYTpiYWxsZXJpbmE=");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort,
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort,
                 "ldapAuth/disableAuthz"), headersMap);
         assertResponse(response, 200, "Hello, World!!!");
     }
@@ -59,7 +59,7 @@ public class LdapAuthStoreTest extends AuthBaseTest {
     public void testAuthenticationWithLDAPAuthstoreWithAuthorization() throws Exception {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Authorization", "Basic dmlqaXRoYTpiYWxsZXJpbmE=");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort,
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort,
                 "ldapAuth/enableAuthz"), headersMap);
         assertResponse(response, 200, "Hello, World!!!");
     }
@@ -68,7 +68,7 @@ public class LdapAuthStoreTest extends AuthBaseTest {
     public void testAuthorizatioFailureWithLDAPAuthstore() throws Exception {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Authorization", "Basic dmlqaXRoYTpiYWxsZXJpbmE=");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(authzServicePort,
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(authzServicePort,
                 "auth/failAuthz"), headersMap);
         assertResponse(response, 403, "Authorization failure");
     }

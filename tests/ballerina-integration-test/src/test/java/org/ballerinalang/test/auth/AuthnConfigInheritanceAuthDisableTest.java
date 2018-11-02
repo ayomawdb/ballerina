@@ -40,7 +40,7 @@ public class AuthnConfigInheritanceAuthDisableTest extends AuthBaseTest {
     @Test(description = "non secured resource test case with no auth headers")
     public void testResourceLevelAuthDisableWithNoAuthHeaders()
             throws Exception {
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"));
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"));
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 200, "Response code mismatched");
     }
@@ -50,7 +50,7 @@ public class AuthnConfigInheritanceAuthDisableTest extends AuthBaseTest {
             throws Exception {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Authorization", "Basic dGVzdDp0ZXN0MTIz");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headersMap);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 200, "Response code mismatched");

@@ -38,7 +38,7 @@ public class AuthnConfigInheritanceTest extends AuthBaseTest {
             throws Exception {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Authorization", "Basic aXNoYXJhOmFiYw==");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headersMap);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 403, "Response code mismatched");
@@ -49,7 +49,7 @@ public class AuthnConfigInheritanceTest extends AuthBaseTest {
             throws Exception {
         Map<String, String> headersMap = new HashMap<>();
         headersMap.put("Authorization", "Basic dGVzdDp0ZXN0MTIz");
-        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttp(servicePort, "echo/test"),
+        HttpResponse response = HttpClientRequest.doGet(serverInstance.getServiceURLHttps(servicePort, "echo/test"),
                 headersMap);
         Assert.assertNotNull(response);
         Assert.assertEquals(response.getResponseCode(), 401, "Response code mismatched");

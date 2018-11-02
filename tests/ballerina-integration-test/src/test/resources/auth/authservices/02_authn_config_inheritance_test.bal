@@ -3,7 +3,13 @@ import ballerina/io;
 import ballerina/auth;
 
 endpoint http:APIListener listener01 {
-    port:9091
+    port:9091,
+    secureSocket: {
+        keyStore: {
+            path: "${ballerina.home}/bre/security/ballerinaKeystore.p12",
+            password: "ballerina"
+        }
+    }
 };
 
 @http:ServiceConfig {
