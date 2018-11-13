@@ -22,14 +22,14 @@ import ballerina/time;
 # + audience - Expected audience
 # + clockSkew - Clock skew in seconds
 # + certificateAlias - Certificate alias used for validation
-# + trustStoreFilePath - Trust store file path
+# + trustStorePath - Trust store file path
 # + trustStorePassword - Trust store password
 public type JWTValidatorConfig record {
     string issuer;
     string audience;
     int clockSkew;
     string certificateAlias;
-    string trustStoreFilePath;
+    string trustStorePath;
     string trustStorePassword;
     !...
 };
@@ -220,9 +220,9 @@ function validateSignature(string[] encodedJWTComponents, JwtHeader jwtHeader, J
     string assertion = encodedJWTComponents[0] + "." + encodedJWTComponents[1];
     string signPart = encodedJWTComponents[2];
     TrustStore trustStore = {};
-    trustStore.certificateAlias = config.certificateAlias;
-    trustStore.trustStoreFilePath = config.trustStoreFilePath;
-    trustStore.trustStorePassword = config.trustStorePassword;
+    trustStore.alias = config.certificateAlias;
+    trustStore.path = config.trustStorePath;
+    trustStore.password = config.trustStorePassword;
     return verifySignature(assertion, signPart, jwtHeader.alg, trustStore);
 }
 

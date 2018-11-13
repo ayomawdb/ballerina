@@ -24,13 +24,6 @@
 extern function verifySignature(string data, string signature, string algorithm, TrustStore trustStore)
     returns error?;
 
-type TrustStore record {
-    string certificateAlias;
-    string trustStoreFilePath;
-    string trustStorePassword;
-    !...
-};
-
 # Sign the given input jwt data.
 #
 # + data - Original that need to sign.
@@ -38,14 +31,6 @@ type TrustStore record {
 # + keyStore - Keystore.
 # + return - Signature. Signed string.
 extern function sign(string data, string algorithm, KeyStore keyStore) returns (string);
-
-type KeyStore record {
-    string keyAlias;
-    string keyPassword;
-    string keyStoreFilePath;
-    string keyStorePassword;
-    !...
-};
 
 # Parse JSON string to generate JSON object.
 #

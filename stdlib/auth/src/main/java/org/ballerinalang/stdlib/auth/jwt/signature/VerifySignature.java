@@ -53,8 +53,8 @@ import static org.ballerinalang.util.BLangConstants.BALLERINA_BUILTIN_PKG;
                 @Argument(name = "data", type = TypeKind.STRING),
                 @Argument(name = "signature", type = TypeKind.STRING),
                 @Argument(name = "algorithm", type = TypeKind.STRING),
-                @Argument(name = "trustStore", type = TypeKind.RECORD, structType = "TrustStoreHolder",
-                        structPackage = "ballerina/internal")
+                @Argument(name = "trustStore", type = TypeKind.RECORD, structType = "TrustStore",
+                        structPackage = "ballerina/auth")
         },
         returnType = {
                 @ReturnType(type = TypeKind.OBJECT, structType = STRUCT_GENERIC_ERROR, structPackage =
@@ -64,9 +64,9 @@ import static org.ballerinalang.util.BLangConstants.BALLERINA_BUILTIN_PKG;
 )
 public class VerifySignature extends BlockingNativeCallableUnit {
     private static final Logger log = LoggerFactory.getLogger(VerifySignature.class);
-    private static final String CERT_ALIAS = "certificateAlias";
-    private static final String TRUST_STORE_PATH = "trustStoreFilePath";
-    private static final String TRUST_STORE_PASSWORD = "trustStorePassword";
+    private static final String CERT_ALIAS = "alias";
+    private static final String TRUST_STORE_PATH = "path";
+    private static final String TRUST_STORE_PASSWORD = "password";
 
     @Override
     public void execute(Context context) {

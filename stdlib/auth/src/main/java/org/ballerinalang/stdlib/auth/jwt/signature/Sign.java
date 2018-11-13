@@ -48,7 +48,7 @@ import java.security.PrivateKey;
                 @Argument(name = "data", type = TypeKind.STRING),
                 @Argument(name = "algorithm", type = TypeKind.STRING),
                 @Argument(name = "keyStore", type = TypeKind.RECORD, structType = "KeyStore",
-                        structPackage = "ballerina/internal")
+                        structPackage = "ballerina/auth")
         },
         returnType = {@ReturnType(type = TypeKind.STRING)},
         isPublic = true
@@ -57,8 +57,8 @@ public class Sign extends BlockingNativeCallableUnit {
     private static final Logger log = LoggerFactory.getLogger(Sign.class);
     private static final String KEY_ALIAS_FIELD = "keyAlias";
     private static final String KEY_PASSWORD_FIELD = "keyPassword";
-    private static final String KEY_STORE_PATH_FIELD = "keyStoreFilePath";
-    private static final String KEY_STORE_PASSWORD_FIELD = "keyStorePassword";
+    private static final String KEY_STORE_PATH_FIELD = "keyStorePath";
+    private static final String KEY_STORE_PASSWORD_FIELD = "KeyStorePassword";
 
     @Override
     public void execute(Context context) {

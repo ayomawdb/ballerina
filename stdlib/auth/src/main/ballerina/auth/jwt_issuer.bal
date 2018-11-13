@@ -24,7 +24,7 @@ import ballerina/io;
 public type JWTIssuerConfig record {
     string keyAlias;
     string keyPassword;
-    string keyStoreFilePath;
+    string keyStorePath;
     string keyStorePassword;
     !...
 };
@@ -46,7 +46,7 @@ public function issue(JwtHeader header, JwtPayload payload, JWTIssuerConfig conf
     KeyStore keyStore = {};
     keyStore.keyAlias = config.keyAlias;
     keyStore.keyPassword = config.keyPassword;
-    keyStore.keyStoreFilePath = config.keyStoreFilePath;
+    keyStore.keyStorePath = config.keyStorePath;
     keyStore.keyStorePassword = config.keyStorePassword;
     string signature = sign(jwtAssertion, header.alg, keyStore);
     return (jwtAssertion + "." + signature);

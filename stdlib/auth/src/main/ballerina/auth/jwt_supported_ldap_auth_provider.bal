@@ -16,7 +16,6 @@
 
 import ballerina/config;
 import ballerina/crypto;
-import ballerina/internal;
 import ballerina/log;
 import ballerina/runtime;
 import ballerina/system;

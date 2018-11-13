@@ -131,7 +131,7 @@ public type JWTAuthProviderConfig record {
     string audience;
     int clockSkew;
     string certificateAlias;
-    string trustStoreFilePath;
+    string trustStorePath;
     string trustStorePassword;
     !...
 };
